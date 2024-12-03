@@ -49,10 +49,10 @@ jobs:
       id: extract_version
       run: |
         version=$(cat version.sbt | grep 'version in ThisBuild :=' | awk -F'\"' '{print $2}')
-        echo "::set-output name=version::$version"
+        echo "version=$version" >> $GITHUB_ENV
 
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
       with:
-        name: spark-sql-perf_2.12-${{ steps.extract_version.outputs.version }}.jar
+        name: spark-sql-perf_2.12-${{ env.version }}.jar
         path: target/scala-2.12/*.jar
