@@ -62,7 +62,8 @@ class Query(
   protected override def doBenchmark(
       includeBreakdown: Boolean,
       description: String = "",
-      messages: ArrayBuffer[String]): BenchmarkResult = {
+      messages: ArrayBuffer[String],
+      iteration: Int = 1): BenchmarkResult = {
     try {
       val dataFrame = buildDataFrame
       val queryExecution = dataFrame.queryExecution

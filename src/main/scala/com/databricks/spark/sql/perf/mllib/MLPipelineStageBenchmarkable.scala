@@ -45,7 +45,8 @@ class MLPipelineStageBenchmarkable(
   override protected def doBenchmark(
     includeBreakdown: Boolean,
     description: String,
-    messages: ArrayBuffer[String]): BenchmarkResult = {
+    messages: ArrayBuffer[String],
+    iteration: Int = 1): BenchmarkResult = {
     try {
       val (trainingTime, model: Transformer) = measureTime {
         logger.info(s"$this: train: trainingSet=${trainingData.schema}")
