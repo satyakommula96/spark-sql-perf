@@ -44,3 +44,9 @@ jobs:
 
     - name: Package with sbt
       run: sbt package
+
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: spark-sql-perf-jar
+        path: target/scala-2.12/*.jar
