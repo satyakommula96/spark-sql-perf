@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout code
@@ -45,8 +45,14 @@ jobs:
     - name: Package with sbt
       run: sbt package
 
+    - name: Extract version
+      id: extract_version
+      run: |
+        version=$(cat version.sbt | grep 'version in ThisBuild :=' | awk -F'\"' '{print $2}')
+        echo "$version"
+
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
       with:
-        name: spark-sql-perf-jar
+        name: spark-sql-perf_2.12-${{ steps.extract_version.outputs.version }}.jar
         path: target/scala-2.12/*.jar
