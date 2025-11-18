@@ -58,7 +58,7 @@ object GenTPCDSData {
         .text("root directory of location to create data in")
       opt[String]('f', "format")
         .action((x, c) => c.copy(format = x))
-        .text("valid spark format, Parquet, ORC ...")
+        .text("valid spark format, Parquet, ORC, Iceberg ...")
       opt[Boolean]('i', "useDoubleForDecimal")
         .action((x, c) => c.copy(useDoubleForDecimal = x))
         .text("true to replace DecimalType with DoubleType")

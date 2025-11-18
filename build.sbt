@@ -40,6 +40,8 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 libraryDependencies += "org.yaml" % "snakeyaml" % "1.23"
 
+libraryDependencies += "org.apache.iceberg" % "iceberg-spark-runtime-3.5_2.12" % "1.4.2" % "provided"
+
 fork := true
 
 // Your username to login to Databricks Cloud

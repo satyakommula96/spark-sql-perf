@@ -181,6 +181,13 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
       val tempTableName = s"${name}_text"
       data.createOrReplaceTempView(tempTableName)
 
+      // Handle Iceberg format specially
+      if (format.toLowerCase == "iceberg") {
+        genIcebergTable(location, data, overwrite, clusterByPartitionColumns,
+          filterOutNullPartitionValues, tempTableName)
+        return
+      }
+
       val writer = if (partitionColumns.nonEmpty) {
         if (clusterByPartitionColumns) {
           val columnString = data.schema.fields.map { field =>
@@ -279,6 +286,124 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
         log.info(s"Analyzing table $name columns $allColumns.")
         sqlContext.sql(s"ANALYZE TABLE $databaseName.$name COMPUTE STATISTICS FOR COLUMNS $allColumns")
       }
+    }
+
+    private def genIcebergTable(
+      location: String,
+      data: org.apache.spark.sql.DataFrame,
+      overwrite: Boolean,
+      clusterByPartitionColumns: Boolean,
+      filterOutNullPartitionValues: Boolean,
+      tempTableName: String): Unit = {
+
+      import org.apache.spark.sql.functions._
+
+      println(s"Generating Iceberg table $name at $location")
+      log.info(s"Generating Iceberg table $name at $location")
+
+      // Generate schema string for CREATE TABLE
+      val schemaFields = fields.map { field =>
+        val dataType = field.dataType match {
+          case IntegerType => "INT"
+          case LongType => "BIGINT"
+          case DecimalType.Fixed(precision, scale) => s"DECIMAL($precision,$scale)"
+          case StringType => "STRING"
+          case DateType => "DATE"
+          case TimestampType => "TIMESTAMP"
+          case DoubleType => "DOUBLE"
+          case FloatType => "FLOAT"
+          case BooleanType => "BOOLEAN"
+          case _ => "STRING" // fallback to STRING for unknown types
+        }
+        s"  ${field.name} $dataType"
+      }.mkString(",\n")
+
+      // Create partition clause if partitioning is enabled
+      val partitionClause = if (partitionColumns.nonEmpty) {
+        s"PARTITIONED BY (${partitionColumns.mkString(", ")})"
+      } else {
+        ""
+      }
+
+      // Drop table if overwrite is true
+      if (overwrite) {
+        try {
+          sqlContext.sql(s"DROP TABLE IF EXISTS iceberg.default.$name")
+          println(s"Dropped existing Iceberg table: iceberg.default.$name")
+          log.info(s"Dropped existing Iceberg table: iceberg.default.$name")
+        } catch {
+          case e: Exception =>
+            println(s"Warning: Could not drop table iceberg.default.$name: ${e.getMessage}")
+            log.warn(s"Warning: Could not drop table iceberg.default.$name: ${e.getMessage}")
+        }
+      }
+
+      // Create Iceberg table
+      val createTableSql = s"""
+        |CREATE TABLE IF NOT EXISTS iceberg.default.$name (
+        |$schemaFields
+        |) USING ICEBERG
+        |$partitionClause
+        |LOCATION '$location'
+      """.stripMargin
+
+      println(s"Creating Iceberg table with SQL: $createTableSql")
+      log.info(s"Creating Iceberg table with SQL: $createTableSql")
+
+      try {
+        sqlContext.sql(createTableSql)
+      } catch {
+        case e: Exception =>
+          println(s"Failed to create Iceberg table: ${e.getMessage}")
+          log.error(s"Failed to create Iceberg table: ${e.getMessage}")
+          throw e
+      }
+
+      // Prepare data for insertion
+      val dataToInsert = if (partitionColumns.nonEmpty && filterOutNullPartitionValues) {
+        val predicates = partitionColumns.map(col => s"$col IS NOT NULL").mkString(" AND ")
+        sqlContext.sql(s"SELECT * FROM $tempTableName WHERE $predicates")
+      } else {
+        sqlContext.sql(s"SELECT * FROM $tempTableName")
+      }
+
+      // Apply clustering if requested
+      val finalData = if (clusterByPartitionColumns && partitionColumns.nonEmpty) {
+        val partitionColumnString = partitionColumns.mkString(",")
+        val columnString = dataToInsert.schema.fields.map(_.name).mkString(",")
+        val query = s"""
+          |SELECT $columnString
+          |FROM $tempTableName
+          |${if (filterOutNullPartitionValues) "WHERE " + partitionColumns.map(col => s"$col IS NOT NULL").mkString(" AND ") else ""}
+          |DISTRIBUTE BY $partitionColumnString
+        """.stripMargin
+        println(s"Pre-clustering Iceberg data with query: $query")
+        log.info(s"Pre-clustering Iceberg data with query: $query")
+        sqlContext.sql(query)
+      } else {
+        dataToInsert
+      }
+
+      // Insert data into Iceberg table
+      val insertMode = if (overwrite) "OVERWRITE" else "INTO"
+      val insertSql = s"INSERT $insertMode iceberg.default.$name SELECT * FROM ${finalData.createOrReplaceTempView(s"${tempTableName}_final"); s"${tempTableName}_final"}"
+
+      println(s"Inserting data into Iceberg table: $insertSql")
+      log.info(s"Inserting data into Iceberg table: $insertSql")
+
+      try {
+        sqlContext.sql(insertSql)
+        println(s"Successfully generated Iceberg table $name at $location")
+        log.info(s"Successfully generated Iceberg table $name at $location")
+      } catch {
+        case e: Exception =>
+          println(s"Failed to insert data into Iceberg table: ${e.getMessage}")
+          log.error(s"Failed to insert data into Iceberg table: ${e.getMessage}")
+          throw e
+      }
+
+      // Clean up temporary view
+      sqlContext.sql(s"DROP VIEW IF EXISTS ${tempTableName}_final")
     }
   }
 
