@@ -22,12 +22,6 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
 
-    - name: Install SDKMAN! and sbt 0.13.18
-      run: |
-        curl -s "https://get.sdkman.io" | bash
-        source "$HOME/.sdkman/bin/sdkman-init.sh"
-        sdk install sbt 0.13.18
-
     - name: Cache sbt
       uses: actions/cache@v4
       with:
@@ -40,10 +34,10 @@ jobs:
           ${{ runner.os }}-sbt-
 
     - name: Build with sbt
-      run: sbt compile
+      run: ./build/sbt compile
 
     - name: Package with sbt
-      run: sbt package
+      run: ./build/sbt package
 
     - name: Extract version
       id: extract_version

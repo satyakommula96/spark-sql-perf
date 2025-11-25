@@ -212,7 +212,7 @@ abstract class Benchmark(
       new SparkPerfExecution(
         name,
         Map.empty,
-        () => Unit,
+        () => (),
         () => rdd.count(),
         rdd.toDebugString)
     }
