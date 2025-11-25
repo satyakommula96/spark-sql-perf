@@ -86,7 +86,7 @@ trait Benchmarkable {
               mode = executionMode.toString,
               parameters = Map.empty,
               failure = Some(Failure(e.getClass.getSimpleName,
-                e.getMessage + ":\n" + e.getStackTraceString)))
+                e.getMessage + ":\n" + e.getStackTrace.mkString("\n"))))
         }
       }
     }

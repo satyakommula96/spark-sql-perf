@@ -19,3 +19,5 @@ src_managed/
 project/boot/
 project/plugins/project/
 performance/
+/.bloop/
+/build/*.zip

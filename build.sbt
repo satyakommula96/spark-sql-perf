@@ -9,61 +9,60 @@ scalaVersion := "2.12.18"
 
 crossScalaVersions := Seq("2.12.18")
 
-sparkPackageName := "databricks/spark-sql-perf"
+// Remove publishing configuration for now - focus on compilation
+// sparkPackageName := "databricks/spark-sql-perf"
 
 // All Spark Packages need a license
 licenses := Seq("Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0"))
 
-sparkVersion := "3.5.1"
+// Spark version - define it manually since we removed the spark-packages plugin
+val sparkVersion = "3.5.1"
 
-sparkComponents ++= Seq("sql", "hive", "mllib")
+// Add Spark dependencies manually
+libraryDependencies ++= Seq(
+  "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-mllib" % sparkVersion % "provided"
+)
 
 
-initialCommands in console :=
+initialCommands / console :=
   """
     |import org.apache.spark.sql._
     |import org.apache.spark.sql.functions._
     |import org.apache.spark.sql.types._
-    |import org.apache.spark.sql.hive.test.TestHive
-    |import TestHive.implicits
-    |import TestHive.sql
+    |import org.apache.spark.sql.SparkSession
     |
-    |val sqlContext = TestHive
+    |val spark = SparkSession.builder().appName("spark-sql-perf").getOrCreate()
+    |val sqlContext = spark.sqlContext
     |import sqlContext.implicits._
   """.stripMargin
 
-libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.1"
+libraryDependencies += "com.github.scopt" %% "scopt" % "4.1.0"
 
-libraryDependencies += "com.twitter" %% "util-jvm" % "6.45.0" % "provided"
+libraryDependencies += "com.twitter" %% "util-jvm" % "24.2.0" % "provided"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % "test"
 
-libraryDependencies += "org.yaml" % "snakeyaml" % "1.23"
+libraryDependencies += "org.yaml" % "snakeyaml" % "2.5"
 
 fork := true
 
-// Your username to login to Databricks Cloud
-dbcUsername := sys.env.getOrElse("DBC_USERNAME", "")
-
-// Your password (Can be set as an environment variable)
-dbcPassword := sys.env.getOrElse("DBC_PASSWORD", "")
-
-// The URL to the Databricks Cloud DB Api. Don't forget to set the port number to 34563!
-dbcApiUrl := sys.env.getOrElse ("DBC_URL", sys.error("Please set DBC_URL"))
-
-// Add any clusters that you would like to deploy your work to. e.g. "My Cluster"
-// or run dbcExecuteCommand
-dbcClusters += sys.env.getOrElse("DBC_USERNAME", "")
-
-dbcLibraryPath := s"/Users/${sys.env.getOrElse("DBC_USERNAME", "")}/lib"
+// Remove Databricks Cloud configuration for now
+// dbcUsername := sys.env.getOrElse("DBC_USERNAME", "")
+// dbcPassword := sys.env.getOrElse("DBC_PASSWORD", "")
+// dbcApiUrl := sys.env.getOrElse ("DBC_URL", sys.error("Please set DBC_URL"))
+// dbcClusters += sys.env.getOrElse("DBC_USERNAME", "")
+// dbcLibraryPath := s"/Users/${sys.env.getOrElse("DBC_USERNAME", "")}/lib"
 
 val runBenchmark = inputKey[Unit]("runs a benchmark")
 
 runBenchmark := {
   import complete.DefaultParsers._
   val args = spaceDelimited("[args]").parsed
-  val scalaRun = (runner in run).value
-  val classpath = (fullClasspath in Compile).value
+  val scalaRun = (Compile / run / runner).value
+  val classpath = (Compile / fullClasspath).value
   scalaRun.run("com.databricks.spark.sql.perf.RunBenchmark", classpath.map(_.data), args,
     streams.value.log)
 }
@@ -74,13 +73,15 @@ val runMLBenchmark = inputKey[Unit]("runs an ML benchmark")
 runMLBenchmark := {
   import complete.DefaultParsers._
   val args = spaceDelimited("[args]").parsed
-  val scalaRun = (runner in run).value
-  val classpath = (fullClasspath in Compile).value
+  val scalaRun = (Compile / run / runner).value
+  val classpath = (Compile / fullClasspath).value
   scalaRun.run("com.databricks.spark.sql.perf.mllib.MLLib", classpath.map(_.data), args,
     streams.value.log)
 }
 
 
+// Comment out release configuration for now
+/*
 import ReleaseTransformations._
 
 /** Push to the team directory instead of the user's homedir for releases. */
@@ -159,3 +160,4 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges
 )
+*/
