@@ -19,7 +19,7 @@ package com.databricks.spark.sql.perf
 import org.apache.spark.sql.SQLContext
 
 case class Results(resultsLocation: String, @transient sqlContext: SQLContext) {
+  val spark = sqlContext.sparkSession
   def allResults =
-    sqlContext.read.json(
-      sqlContext.sparkContext.textFile(s"$resultsLocation/*/"))
+    spark.read.json(spark.sparkContext.textFile(s"$resultsLocation/*/"))
 }

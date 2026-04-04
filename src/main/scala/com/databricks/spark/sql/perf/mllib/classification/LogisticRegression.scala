@@ -8,9 +8,11 @@ import org.apache.spark.ml.{Estimator, ModelBuilderSSP, PipelineStage, Transform
 import org.apache.spark.ml
 import org.apache.spark.ml.linalg.Vectors
 
-
-object LogisticRegression extends BenchmarkAlgorithm
-  with TestFromTraining with TrainingSetFromTransformer with ScoringWithEvaluator {
+object LogisticRegression
+    extends BenchmarkAlgorithm
+    with TestFromTraining
+    with TrainingSetFromTransformer
+    with ScoringWithEvaluator {
 
   override protected def initialData(ctx: MLBenchContext) = {
     import ctx.params._
@@ -19,7 +21,8 @@ object LogisticRegression extends BenchmarkAlgorithm
       numExamples,
       ctx.seed(),
       numPartitions,
-      numFeatures)
+      numFeatures
+    )
   }
 
   override protected def trueModel(ctx: MLBenchContext): Transformer = {
@@ -42,4 +45,3 @@ object LogisticRegression extends BenchmarkAlgorithm
   override protected def evaluator(ctx: MLBenchContext): Evaluator =
     new MulticlassClassificationEvaluator()
 }
-

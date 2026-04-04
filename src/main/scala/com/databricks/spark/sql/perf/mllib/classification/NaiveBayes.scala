@@ -10,8 +10,11 @@ import com.databricks.spark.sql.perf.mllib._
 import com.databricks.spark.sql.perf.mllib.data.DataGenerator
 
 /** Object containing methods used in performance tests for (multinomial) NaiveBayesModels */
-object NaiveBayes extends BenchmarkAlgorithm
-  with TestFromTraining with TrainingSetFromTransformer with ScoringWithEvaluator {
+object NaiveBayes
+    extends BenchmarkAlgorithm
+    with TestFromTraining
+    with TrainingSetFromTransformer
+    with ScoringWithEvaluator {
 
   override protected def initialData(ctx: MLBenchContext) = {
     import ctx.params._
@@ -25,7 +28,8 @@ object NaiveBayes extends BenchmarkAlgorithm
       numExamples,
       ctx.seed(),
       numPartitions,
-      featureArity)
+      featureArity
+    )
   }
 
   override protected def trueModel(ctx: MLBenchContext): Transformer = {
@@ -35,21 +39,23 @@ object NaiveBayes extends BenchmarkAlgorithm
     // theta = log of class conditional probabilities, whose dimension is C (number of classes)
     // by D (number of features)
     val unnormalizedProbs = 0.until(numClasses).map(_ => rng.nextDouble() + 1e-5).toArray
-    val logProbSum = math.log(unnormalizedProbs.sum)
-    val piArray = unnormalizedProbs.map(prob => math.log(prob) - logProbSum)
+    val logProbSum        = math.log(unnormalizedProbs.sum)
+    val piArray           = unnormalizedProbs.map(prob => math.log(prob) - logProbSum)
 
     // For class i, set the class-conditional probability of feature i to 0.7, and split up the
     // remaining probability mass across the other features
     val currClassProb = 0.7
-    val thetaArray = Array.tabulate(numClasses) { i: Int =>
-      val baseProbMass = (1 - currClassProb) / (numFeatures - 1)
-      val probs = Array.fill[Double](numFeatures)(baseProbMass)
-      probs(i) = currClassProb
-      probs
-    }.map(_.map(math.log))
+    val thetaArray = Array
+      .tabulate(numClasses) { i: Int =>
+        val baseProbMass = (1 - currClassProb) / (numFeatures - 1)
+        val probs        = Array.fill[Double](numFeatures)(baseProbMass)
+        probs(i) = currClassProb
+        probs
+      }
+      .map(_.map(math.log))
 
     // Initialize new Naive Bayes model
-    val pi = Vectors.dense(piArray)
+    val pi    = Vectors.dense(piArray)
     val theta = new DenseMatrix(numClasses, numFeatures, thetaArray.flatten, true)
 
     ModelBuilderSSP.newNaiveBayesModel(pi, theta)

@@ -9,7 +9,6 @@ import com.databricks.spark.sql.perf.mllib._
 import com.databricks.spark.sql.perf.mllib.OptionImplicits._
 import com.databricks.spark.sql.perf.mllib.data.DataGenerator
 
-
 /** Object containing methods used in performance tests for FPGrowth */
 object FPGrowth extends BenchmarkAlgorithm with TestFromTraining {
 
@@ -22,21 +21,20 @@ object FPGrowth extends BenchmarkAlgorithm with TestFromTraining {
       ctx.seed(),
       numPartitions,
       numItems,
-      itemSetSize)
+      itemSetSize
+    )
   }
 
-  override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {
+  override def getPipelineStage(ctx: MLBenchContext): PipelineStage =
     new ml.fpm.FPGrowth()
       .setItemsCol("items")
-  }
 
   override def testAdditionalMethods(
       ctx: MLBenchContext,
-      model: Transformer): Map[String, () => _] = {
+      model: Transformer
+  ): Map[String, () => _] = {
 
     val fpModel = model.asInstanceOf[FPGrowthModel]
-    Map("associationRules" -> (() => {
-      fpModel.associationRules.count()
-    }))
+    Map("associationRules" -> (() => fpModel.associationRules.count()))
   }
 }

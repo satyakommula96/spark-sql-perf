@@ -16,10 +16,10 @@
 
 package com.databricks.spark.sql.perf
 
-import java.io.{FileOutputStream, File}
+import java.io.{File, FileOutputStream}
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.spark.sql.{DataFrame, SQLContext, Row}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 import org.apache.spark.sql.functions._
 
 import scala.language.reflectiveCalls
@@ -29,10 +29,9 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 
 import com.twitter.jvm.CpuProfile
 
-/**
- * A collection of utilities for parsing stacktraces that have been recorded in JSON and generating visualizations
- * on where time is being spent.
- */
+/** A collection of utilities for parsing stacktraces that have been recorded in JSON and generating
+  * visualizations on where time is being spent.
+  */
 package object cpu {
 
   // Placeholder for DBFS.
@@ -44,10 +43,7 @@ package object cpu {
   private val resultsLocation = "/spark/sql/cpu"
 
   lazy val pprof = {
-    run(
-      "sudo apt-get install -y graphviz",
-      "cp /dbfs/home/michael/pprof ./",
-      "chmod 755 pprof")
+    run("sudo apt-get install -y graphviz", "cp /dbfs/home/michael/pprof ./", "chmod 755 pprof")
 
     "./pprof"
   }
@@ -55,23 +51,27 @@ package object cpu {
   def getCpuLocation(timestamp: Long) = s"$resultsLocation/timestamp=$timestamp"
 
   def collectLogs(sqlContext: SQLContext, fs: FS, timestamp: Long): String = {
-    import sqlContext.implicits._
+    val spark = sqlContext.sparkSession
+    import spark.implicits._
 
     def sc = sqlContext.sparkContext
 
     def copyLogFiles() = {
-      val path = "pwd".!!.trim
+      val path     = "pwd".!!.trim
       val hostname = "hostname".!!.trim
 
       val conf = new Configuration()
-      val fs = FileSystem.get(conf)
-      fs.copyFromLocalFile(new Path(s"$path/logs/cpu.json"), new Path(s"$resultsLocation/timestamp=$timestamp/$hostname"))
+      val fs   = FileSystem.get(conf)
+      fs.copyFromLocalFile(
+        new Path(s"$path/logs/cpu.json"),
+        new Path(s"$resultsLocation/timestamp=$timestamp/$hostname")
+      )
     }
 
     fs.rm(getCpuLocation(timestamp), true)
 
     copyLogFiles()
-    sc.parallelize((1 to 100)).foreach { i => copyLogFiles() }
+    sc.parallelize((1 to 100)).foreach(i => copyLogFiles())
     getCpuLocation(timestamp)
   }
 
@@ -92,7 +92,8 @@ package object cpu {
   }
 
   class Profile(private val sqlContext: SQLContext, cpuLogs: DataFrame) {
-    import sqlContext.implicits._
+    val spark = sqlContext.sparkSession
+    import spark.implicits._
 
     def hosts = cpuLogs.select($"tags.hostName").distinct.collect().map(_.getString(0))
 
@@ -100,24 +101,39 @@ package object cpu {
       val stackLine = """(.*)\.([^\(]+)\(([^:]+)(:{0,1}\d*)\)""".r
       def toStackElement(s: String) = s match {
         case stackLine(cls, method, file, "") => new StackTraceElement(cls, method, file, 0)
-        case stackLine(cls, method, file, line) => new StackTraceElement(cls, method, file, line.stripPrefix(":").toInt)
+        case stackLine(cls, method, file, line) =>
+          new StackTraceElement(cls, method, file, line.stripPrefix(":").toInt)
       }
 
-      val counts = cpuLogs.groupBy($"stack").agg(count($"*")).collect().flatMap {
-        case Row(stackLines: Array[String], count: Long) => stackLines.toSeq.map(toStackElement) -> count :: Nil
-        case other => println(s"Failed to parse $other"); Nil
-      }.toMap
-      val profile = new com.twitter.jvm.CpuProfile(counts, com.twitter.util.Duration.fromSeconds(10), cpuLogs.count().toInt, 0)
+      val counts = cpuLogs
+        .groupBy($"stack")
+        .agg(count($"*"))
+        .collect()
+        .flatMap {
+          case Row(stackLines: Array[String], count: Long) =>
+            stackLines.toSeq.map(toStackElement) -> count :: Nil
+          case other => println(s"Failed to parse $other"); Nil
+        }
+        .toMap
+      val profile = new com.twitter.jvm.CpuProfile(
+        counts,
+        com.twitter.util.Duration.fromSeconds(10),
+        cpuLogs.count().toInt,
+        0
+      )
 
       val outfile = File.createTempFile("cpu", "profile")
       val svgFile = File.createTempFile("cpu", "svg")
 
       profile.writeGoogleProfile(new FileOutputStream(outfile))
 
-      println(run(
-        "cp /dbfs/home/michael/pprof ./",
-        "chmod 755 pprof",
-        s"$pprof --svg ${outfile.getCanonicalPath} > ${svgFile.getCanonicalPath}"))
+      println(
+        run(
+          "cp /dbfs/home/michael/pprof ./",
+          "chmod 755 pprof",
+          s"$pprof --svg ${outfile.getCanonicalPath} > ${svgFile.getCanonicalPath}"
+        )
+      )
 
       val timestamp = System.currentTimeMillis()
       fs.cp(s"file://$svgFile", s"/FileStore/cpu.profiles/$timestamp.svg", false)

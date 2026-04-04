@@ -14,8 +14,12 @@ object GBTClassification extends BenchmarkAlgorithm with TreeOrForestClassifier 
     import ctx.params._
     // We add +1 to the depth to make it more likely that many iterations of boosting are needed
     // to model the true tree.
-    ModelBuilderSSP.newDecisionTreeClassificationModel(depth + 1, numClasses, getFeatureArity(ctx),
-      ctx.seed())
+    ModelBuilderSSP.newDecisionTreeClassificationModel(
+      depth + 1,
+      numClasses,
+      getFeatureArity(ctx),
+      ctx.seed()
+    )
   }
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {

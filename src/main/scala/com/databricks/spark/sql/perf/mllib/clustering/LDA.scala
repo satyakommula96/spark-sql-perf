@@ -13,7 +13,6 @@ import org.apache.spark.ml.linalg.{Vector, Vectors}
 import com.databricks.spark.sql.perf.mllib.{BenchmarkAlgorithm, MLBenchContext, TestFromTraining}
 import com.databricks.spark.sql.perf.mllib.OptionImplicits._
 
-
 object LDA extends BenchmarkAlgorithm with TestFromTraining {
   // The LDA model is package private, no need to expose it.
 
@@ -24,13 +23,13 @@ object LDA extends BenchmarkAlgorithm with TestFromTraining {
       numPartitions
     )
     val seed: Int = randomSeed
-    val docLen = docLength.get
-    val numVocab = vocabSize.get
+    val docLen    = docLength.get
+    val numVocab  = vocabSize.get
     val data: RDD[(Long, Vector)] = rdd.mapPartitionsWithIndex { (idx, partition) =>
       val rng = new Well19937c(seed ^ idx)
       partition.map { docIndex =>
         var currentSize = 0
-        val entries = MHashMap[Int, Int]()
+        val entries     = MHashMap[Int, Int]()
         while (currentSize < docLen) {
           val index = rng.nextInt(numVocab)
           entries(index) = entries.getOrElse(index, 0) + 1

@@ -31,22 +31,20 @@ object Word2Vec extends BenchmarkAlgorithm with TestFromTraining {
     df.select(split(col("text"), " ").as("text"))
   }
 
-  override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {
+  override def getPipelineStage(ctx: MLBenchContext): PipelineStage =
     new ml.feature.Word2Vec().setInputCol("text")
-  }
 
   override def testAdditionalMethods(
       ctx: MLBenchContext,
-      model: Transformer): Map[String, () => _] = {
+      model: Transformer
+  ): Map[String, () => _] = {
     import ctx.params._
 
-    val rng = new Random(ctx.seed())
+    val rng           = new Random(ctx.seed())
     val word2vecModel = model.asInstanceOf[Word2VecModel]
-    val testWord = Vectors.dense(Array.fill(word2vecModel.getVectorSize)(rng.nextGaussian()))
+    val testWord      = Vectors.dense(Array.fill(word2vecModel.getVectorSize)(rng.nextGaussian()))
 
-    Map("findSynonyms" -> (() => {
-      word2vecModel.findSynonyms(testWord, numSynonymsToFind)
-    }))
+    Map("findSynonyms" -> (() => word2vecModel.findSynonyms(testWord, numSynonymsToFind)))
   }
 
 }

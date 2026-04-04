@@ -7,34 +7,44 @@ import org.apache.spark.sql._
 
 import com.databricks.spark.sql.perf.mllib.OptionImplicits._
 import com.databricks.spark.sql.perf.mllib.data.DataGenerator
-import com.databricks.spark.sql.perf.mllib.{BenchmarkAlgorithm, MLBenchContext, ScoringWithEvaluator}
+import com.databricks.spark.sql.perf.mllib.{
+  BenchmarkAlgorithm,
+  MLBenchContext,
+  ScoringWithEvaluator
+}
 
 object ALS extends BenchmarkAlgorithm with ScoringWithEvaluator {
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    DataGenerator.generateRatings(
-      ctx.sqlContext,
-      numUsers,
-      numItems,
-      numExamples,
-      numTestExamples,
-      implicitPrefs = false,
-      numPartitions,
-      ctx.seed())._1
+    DataGenerator
+      .generateRatings(
+        ctx.sqlContext,
+        numUsers,
+        numItems,
+        numExamples,
+        numTestExamples,
+        implicitPrefs = false,
+        numPartitions,
+        ctx.seed()
+      )
+      ._1
   }
 
   override def testDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    DataGenerator.generateRatings(
-      ctx.sqlContext,
-      numUsers,
-      numItems,
-      numExamples,
-      numTestExamples,
-      implicitPrefs = false,
-      numPartitions,
-      ctx.seed())._2
+    DataGenerator
+      .generateRatings(
+        ctx.sqlContext,
+        numUsers,
+        numItems,
+        numExamples,
+        numTestExamples,
+        implicitPrefs = false,
+        numPartitions,
+        ctx.seed()
+      )
+      ._2
   }
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {
@@ -47,7 +57,6 @@ object ALS extends BenchmarkAlgorithm with ScoringWithEvaluator {
       .setMaxIter(maxIter)
   }
 
-  override protected def evaluator(ctx: MLBenchContext): Evaluator = {
+  override protected def evaluator(ctx: MLBenchContext): Evaluator =
     new RegressionEvaluator().setLabelCol("rating")
-  }
 }

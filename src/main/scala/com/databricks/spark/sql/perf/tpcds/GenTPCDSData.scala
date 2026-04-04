@@ -31,23 +31,22 @@ case class GenTPCDSDataConfig(
     clusterByPartitionColumns: Boolean = true,
     filterOutNullPartitionValues: Boolean = true,
     tableFilter: String = "",
-    numPartitions: Int = 100)
+    numPartitions: Int = 100
+)
 
-/**
- * Gen TPCDS data.
- * To run this:
- * {{{
- *   build/sbt "test:runMain <this class> -d <dsdgenDir> -s <scaleFactor> -l <location> -f <format>"
- * }}}
- */
+/** Gen TPCDS data. To run this:
+  * {{{
+  *   build/sbt "test:runMain <this class> -d <dsdgenDir> -s <scaleFactor> -l <location> -f <format>"
+  * }}}
+  */
 object GenTPCDSData {
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[GenTPCDSDataConfig]("Gen-TPC-DS-data") {
       opt[String]('m', "master")
-        .action { (x, c) => c.copy(master = x) }
+        .action((x, c) => c.copy(master = x))
         .text("the Spark master to use, default to local[*]")
       opt[String]('d', "dsdgenDir")
-        .action { (x, c) => c.copy(dsdgenDir = x) }
+        .action((x, c) => c.copy(dsdgenDir = x))
         .text("location of dsdgen")
         .required()
       opt[String]('s', "scaleFactor")
@@ -58,7 +57,7 @@ object GenTPCDSData {
         .text("root directory of location to create data in")
       opt[String]('f', "format")
         .action((x, c) => c.copy(format = x))
-        .text("valid spark format, Parquet, ORC ...")
+        .text("valid spark format, Parquet, ORC, Delta, Iceberg ...")
       opt[Boolean]('i', "useDoubleForDecimal")
         .action((x, c) => c.copy(useDoubleForDecimal = x))
         .text("true to replace DecimalType with DoubleType")
@@ -102,11 +101,13 @@ object GenTPCDSData {
       .master(config.master)
       .getOrCreate()
 
-    val tables = new TPCDSTables(spark.sqlContext,
+    val tables = new TPCDSTables(
+      spark.sqlContext,
       dsdgenDir = config.dsdgenDir,
       scaleFactor = config.scaleFactor,
       useDoubleForDecimal = config.useDoubleForDecimal,
-      useStringForDate = config.useStringForDate)
+      useStringForDate = config.useStringForDate
+    )
 
     tables.genData(
       location = config.location,
@@ -116,6 +117,7 @@ object GenTPCDSData {
       clusterByPartitionColumns = config.clusterByPartitionColumns,
       filterOutNullPartitionValues = config.filterOutNullPartitionValues,
       tableFilter = config.tableFilter,
-      numPartitions = config.numPartitions)
+      numPartitions = config.numPartitions
+    )
   }
 }

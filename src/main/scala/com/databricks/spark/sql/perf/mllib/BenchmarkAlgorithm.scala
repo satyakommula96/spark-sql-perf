@@ -8,67 +8,58 @@ import org.apache.spark.sql.functions._
 
 import com.databricks.spark.sql.perf._
 
-/**
- * The description of a benchmark for an ML algorithm. It follows a simple, standard proceduce:
- *  - generate some test and training data
- *  - generate a model against the training data
- *  - score the model against the training data
- *  - score the model against the test data
- *
- * You should not assume that your implementation can carry state around. If some state is needed,
- * consider adding it to the context.
- *
- * It is assumed that the implementation is going to be an object.
- */
+/** The description of a benchmark for an ML algorithm. It follows a simple, standard proceduce:
+  *   - generate some test and training data
+  *   - generate a model against the training data
+  *   - score the model against the training data
+  *   - score the model against the test data
+  *
+  * You should not assume that your implementation can carry state around. If some state is needed,
+  * consider adding it to the context.
+  *
+  * It is assumed that the implementation is going to be an object.
+  */
 trait BenchmarkAlgorithm {
 
   def trainingDataSet(ctx: MLBenchContext): DataFrame
 
   def testDataSet(ctx: MLBenchContext): DataFrame
 
-  /**
-   * Create an [[Estimator]] or [[Transformer]] with params set from the given [[MLBenchContext]].
-   */
+  /** Create an [[Estimator]] or [[Transformer]] with params set from the given [[MLBenchContext]].
+    */
   def getPipelineStage(ctx: MLBenchContext): PipelineStage
 
-  /**
-   * The unnormalized score of the training procedure on a dataset. The normalization is
-   * performed by the caller.
-   * This calls `count()` on the transformed data to attempt to materialize the result for
-   * recording timing metrics.
-   */
+  /** The unnormalized score of the training procedure on a dataset. The normalization is performed
+    * by the caller. This calls `count()` on the transformed data to attempt to materialize the
+    * result for recording timing metrics.
+    */
   @throws[Exception]("if scoring fails")
-  def score(
-      ctx: MLBenchContext,
-      testSet: DataFrame,
-      model: Transformer): MLMetric = {
+  def score(ctx: MLBenchContext, testSet: DataFrame, model: Transformer): MLMetric = {
     val output = model.transform(testSet)
     // We create a useless UDF to make sure the entire DataFrame is instantiated.
-    val fakeUDF = udf { (_: Any) => 0 }
+    val fakeUDF = udf((_: Any) => 0)
     val columns = testSet.columns
-    output.select(sum(fakeUDF(struct(columns.map(col) : _*)))).first()
+    output.select(sum(fakeUDF(struct(columns.map(col): _*)))).first()
     MLMetric.Invalid
   }
 
-  def name: String = {
+  def name: String =
     this.getClass.getCanonicalName.replace("$", "")
-  }
 
-  /**
-   * Test additional methods for some algorithms.
-   *
-   * @param transformer The transformer which includes additional methods.
-   * @return A map which key is the additional method name, and value is a function which runs
-   *         the corresponding method.
-   */
-  def testAdditionalMethods(
-      ctx: MLBenchContext,
-      transformer: Transformer): Map[String, () => _] = Map.empty[String, () => _]
+  /** Test additional methods for some algorithms.
+    *
+    * @param transformer
+    *   The transformer which includes additional methods.
+    * @return
+    *   A map which key is the additional method name, and value is a function which runs the
+    *   corresponding method.
+    */
+  def testAdditionalMethods(ctx: MLBenchContext, transformer: Transformer): Map[String, () => _] =
+    Map.empty[String, () => _]
 }
 
-/**
- * Uses an evaluator to perform the scoring.
- */
+/** Uses an evaluator to perform the scoring.
+  */
 trait ScoringWithEvaluator {
   self: BenchmarkAlgorithm =>
 
@@ -77,9 +68,10 @@ trait ScoringWithEvaluator {
   final override def score(
       ctx: MLBenchContext,
       testSet: DataFrame,
-      model: Transformer): MLMetric = {
+      model: Transformer
+  ): MLMetric = {
     val results = model.transform(testSet)
-    val eval = evaluator(ctx)
+    val eval    = evaluator(ctx)
     val metricName = if (eval.hasParam("metricName")) {
       val param = eval.getParam("metricName")
       eval.getOrDefault(param).toString
@@ -91,10 +83,9 @@ trait ScoringWithEvaluator {
   }
 }
 
-/**
- * Builds the training set for an initial dataset and an initial model. Useful for validating a
- * trained model against a given model.
- */
+/** Builds the training set for an initial dataset and an initial model. Useful for validating a
+  * trained model against a given model.
+  */
 trait TrainingSetFromTransformer {
   self: BenchmarkAlgorithm =>
 
@@ -104,8 +95,8 @@ trait TrainingSetFromTransformer {
 
   final override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     val initial = initialData(ctx)
-    val model = trueModel(ctx)
-    val fCol = col("features")
+    val model   = trueModel(ctx)
+    val fCol    = col("features")
     // Special case for the trees: we need to set the number of labels.
     // numClasses is set? We will add the number of classes to the final column.
     val lCol = ctx.params.numClasses match {
@@ -124,9 +115,8 @@ trait TrainingSetFromTransformer {
   }
 }
 
-/**
- * The test data is the same as the training data.
- */
+/** The test data is the same as the training data.
+  */
 trait TestFromTraining {
   self: BenchmarkAlgorithm =>
 
@@ -145,4 +135,3 @@ trait TestFromTraining {
     self.trainingDataSet(ctx2)
   }
 }
-

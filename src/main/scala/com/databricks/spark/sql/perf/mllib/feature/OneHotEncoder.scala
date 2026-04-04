@@ -16,19 +16,23 @@ object OneHotEncoder extends BenchmarkAlgorithm with TestFromTraining with Unary
     import ctx.params._
     import ctx.sqlContext.implicits._
 
-    DataGenerator.generateMixedFeatures(
-      ctx.sqlContext,
-      numExamples,
-      ctx.seed(),
-      numPartitions,
-      Array.fill(1)(featureArity.get)
-    ).rdd.map { case Row(vec: Vector) =>
-      vec(0) // extract the single generated double value for each row
-    }.toDF(inputCol)
+    DataGenerator
+      .generateMixedFeatures(
+        ctx.sqlContext,
+        numExamples,
+        ctx.seed(),
+        numPartitions,
+        Array.fill(1)(featureArity.get)
+      )
+      .rdd
+      .map {
+        case Row(vec: Vector) =>
+          vec(0) // extract the single generated double value for each row
+      }
+      .toDF(inputCol)
   }
 
-  override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {
+  override def getPipelineStage(ctx: MLBenchContext): PipelineStage =
     new ml.feature.OneHotEncoder()
       .setInputCol(inputCol)
-  }
 }

@@ -6,7 +6,6 @@ import org.apache.spark.ml.classification.RandomForestClassifier
 import com.databricks.spark.sql.perf.mllib._
 import com.databricks.spark.sql.perf.mllib.OptionImplicits._
 
-
 object RandomForestClassification extends BenchmarkAlgorithm with TreeOrForestClassifier {
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {

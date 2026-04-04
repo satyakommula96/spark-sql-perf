@@ -15,7 +15,7 @@ object HashingTF extends BenchmarkAlgorithm with TestFromTraining with UnaryTran
 
   // Sample a random sentence of length up to maxLen from the provided array of words
   private def randomSentence(rng: Random, maxLen: Int, dictionary: Array[String]): Array[String] = {
-    val length = rng.nextInt(maxLen - 1) + 1
+    val length     = rng.nextInt(maxLen - 1) + 1
     val dictLength = dictionary.length
     Array.tabulate[String](length)(_ => dictionary(rng.nextInt(dictLength)))
   }
@@ -26,9 +26,15 @@ object HashingTF extends BenchmarkAlgorithm with TestFromTraining with UnaryTran
     // each string is selected from a pool of vocabSize strings
     // The expected # of occurrences of each word in our vocabulary is
     // (docLength * numExamples) / vocabSize
-    val df = DataGenerator.generateDoc(ctx.sqlContext, numExamples = numExamples, seed = ctx.seed(),
-      numPartitions = numPartitions, vocabSize = vocabSize, avgDocLength = docLength,
-      dataColName = inputCol)
+    val df = DataGenerator.generateDoc(
+      ctx.sqlContext,
+      numExamples = numExamples,
+      seed = ctx.seed(),
+      numPartitions = numPartitions,
+      vocabSize = vocabSize,
+      avgDocLength = docLength,
+      dataColName = inputCol
+    )
     df.withColumn(inputCol, split(df(inputCol), " "))
   }
 
