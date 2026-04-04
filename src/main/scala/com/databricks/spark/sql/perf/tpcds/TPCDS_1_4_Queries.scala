@@ -18,11 +18,9 @@ package com.databricks.spark.sql.perf.tpcds
 
 import com.databricks.spark.sql.perf.{Benchmark, ExecutionMode, Query}
 
-/**
- * This implements the official TPCDS v1.4 queries with only cosmetic modifications
- * (noted for each query).
- * Don't modify this except for these kind of modifications.
- */
+/** This implements the official TPCDS v1.4 queries with only cosmetic modifications (noted for each
+  * query). Don't modify this except for these kind of modifications.
+  */
 trait Tpcds_1_4_Queries extends Benchmark {
 
   import ExecutionMode._
@@ -33,7 +31,9 @@ trait Tpcds_1_4_Queries extends Benchmark {
 
   // Queries the TPCDS 1.4 queries using the qualifcations values in the templates.
   val tpcds1_4Queries = Seq(
-    ("q1", """
+    (
+      "q1",
+      """
             | WITH customer_total_return AS
             |   (SELECT sr_customer_sk AS ctr_customer_sk, sr_store_sk AS ctr_store_sk,
             |           sum(sr_return_amt) AS ctr_total_return
@@ -50,8 +50,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   AND s_state = 'TN'
             |   AND ctr1.ctr_customer_sk = c_customer_sk
             |   ORDER BY c_customer_id LIMIT 100
-            """.stripMargin),
-    ("q2", """
+            """.stripMargin
+    ),
+    (
+      "q2",
+      """
             | WITH wscs as
             | (SELECT sold_date_sk, sales_price
             |  FROM (SELECT ws_sold_date_sk sold_date_sk, ws_ext_sales_price sales_price
@@ -102,8 +105,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |  WHERE date_dim.d_week_seq = wswscs.d_week_seq AND d_year = 2001 + 1) z
             | WHERE d_week_seq1=d_week_seq2-53
             | ORDER BY d_week_seq1
-            """.stripMargin),
-    ("q3", """
+            """.stripMargin
+    ),
+    (
+      "q3",
+      """
             | SELECT dt.d_year, item.i_brand_id brand_id, item.i_brand brand,SUM(ss_ext_sales_price) sum_agg
             | FROM  date_dim dt, store_sales, item
             | WHERE dt.d_date_sk = store_sales.ss_sold_date_sk
@@ -113,8 +119,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | GROUP BY dt.d_year, item.i_brand, item.i_brand_id
             | ORDER BY dt.d_year, sum_agg desc, brand_id
             | LIMIT 100
-            """.stripMargin),
-    ("q4", """
+            """.stripMargin
+    ),
+    (
+      "q4",
+      """
             |WITH year_total AS (
             | SELECT c_customer_id customer_id,
             |        c_first_name customer_first_name,
@@ -221,10 +230,13 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   t_s_secyear.customer_login,
             |   t_s_secyear.customer_email_address
             | LIMIT 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
     // Modifications: "||" -> concat
-    ("q5", """
+    (
+      "q5",
+      """
             | WITH ssr AS
             |  (SELECT s_store_id,
             |          sum(sales_price) as sales,
@@ -342,8 +354,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | GROUP BY ROLLUP (channel, id)
             | ORDER BY channel, id
             | LIMIT 100
-            """.stripMargin),
-    ("q6", """
+            """.stripMargin
+    ),
+    (
+      "q6",
+      """
             | SELECT a.ca_state state, count(*) cnt
             | FROM
             |    customer_address a, customer c, store_sales s, date_dim d, item i
@@ -360,8 +375,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | GROUP BY a.ca_state
             | HAVING count(*) >= 10
             | ORDER BY cnt LIMIT 100
-            """.stripMargin),
-    ("q7", """
+            """.stripMargin
+    ),
+    (
+      "q7",
+      """
             | SELECT i_item_id,
             |        avg(ss_quantity) agg1,
             |        avg(ss_list_price) agg2,
@@ -379,8 +397,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |       d_year = 2000
             | GROUP BY i_item_id
             | ORDER BY i_item_id LIMIT 100
-            """.stripMargin),
-    ("q8", """
+            """.stripMargin
+    ),
+    (
+      "q8",
+      """
             | select s_store_name, sum(ss_net_profit)
             | from store_sales, date_dim, store,
             |     (SELECT ca_zip
@@ -462,8 +483,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |  and (substr(s_zip,1,2) = substr(V1.ca_zip,1,2))
             | group by s_store_name
             | order by s_store_name LIMIT 100
-            """.stripMargin),
-    ("q9", s"""
+            """.stripMargin
+    ),
+    (
+      "q9",
+      s"""
             |select case when (select count(*) from store_sales
             |                  where ss_quantity between 1 and 20) > ${rc(0)}
             |            then (select avg(ss_ext_discount_amt) from store_sales
@@ -496,8 +520,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |                  where ss_quantity between 81 and 100) end bucket5
             |from reason
             |where r_reason_sk = 1
-            """.stripMargin),
-    ("q10", """
+            """.stripMargin
+    ),
+    (
+      "q10",
+      """
             | select
             |  cd_gender, cd_marital_status, cd_education_status, count(*) cnt1,
             |  cd_purchase_estimate, count(*) cnt2, cd_credit_rating, count(*) cnt3,
@@ -542,8 +569,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |          cd_dep_employed_count,
             |          cd_dep_college_count
             |LIMIT 100
-            """.stripMargin),
-    ("q11", """
+            """.stripMargin
+    ),
+    (
+      "q11",
+      """
             | with year_total as (
             | select c_customer_id customer_id
             |       ,c_first_name customer_first_name
@@ -607,9 +637,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |             > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
             | order by t_s_secyear.customer_preferred_cust_flag
             | LIMIT 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q12", """
+    (
+      "q12",
+      """
             | select 
             |  i_item_desc, i_category, i_class, i_current_price,
             |  sum(ws_ext_sales_price) as itemrevenue,
@@ -628,8 +661,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | order by
             |	i_category, i_class, i_item_id, i_item_desc, revenueratio
             | LIMIT 100
-            """.stripMargin),
-    ("q13", """
+            """.stripMargin
+    ),
+    (
+      "q13",
+      """
             | select avg(ss_quantity)
             |       ,avg(ss_ext_sales_price)
             |       ,avg(ss_ext_wholesale_cost)
@@ -678,8 +714,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |  and ca_state in ('VA', 'TX', 'MS')
             |  and ss_net_profit between 50 and 250
             |     ))
-            """.stripMargin),
-    ("q14a", """
+            """.stripMargin
+    ),
+    (
+      "q14a",
+      """
             |with cross_items as
             | (select i_item_sk ss_item_sk
             | from item,
@@ -758,8 +797,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by rollup (channel, i_brand_id,i_class_id,i_category_id)
             | order by channel,i_brand_id,i_class_id,i_category_id
             | limit 100
-            """.stripMargin),
-    ("q14b", """
+            """.stripMargin
+    ),
+    (
+      "q14b",
+      """
             | with  cross_items as
             | (select i_item_sk ss_item_sk
             |  from item,
@@ -823,8 +865,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and this_year.i_category_id = last_year.i_category_id
             | order by this_year.channel, this_year.i_brand_id, this_year.i_class_id, this_year.i_category_id
             | limit 100
-            """.stripMargin),
-    ("q15", """
+            """.stripMargin
+    ),
+    (
+      "q15",
+      """
             | select ca_zip, sum(cs_sales_price)
             | from catalog_sales, customer, customer_address, date_dim
             | where cs_bill_customer_sk = c_customer_sk
@@ -838,9 +883,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by ca_zip
             | order by ca_zip
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: " -> `
-    ("q16", """
+    (
+      "q16",
+      """
             | select
             |   count(distinct cs_order_number) as `order count`,
             |   sum(cs_ext_ship_cost) as `total shipping cost`,
@@ -863,8 +911,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |               where cs1.cs_order_number = cr1.cr_order_number)
             | order by count(distinct cs_order_number)
             | limit 100
-            """.stripMargin),
-    ("q17", """
+            """.stripMargin
+    ),
+    (
+      "q17",
+      """
             | select i_item_id
             |       ,i_item_desc
             |       ,s_state
@@ -896,9 +947,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_id, i_item_desc, s_state
             | order by i_item_id, i_item_desc, s_state
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "numeric" -> "decimal"
-    ("q18", """
+    (
+      "q18",
+      """
             | select i_item_id,
             |        ca_country,
             |        ca_state,
@@ -926,8 +980,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by rollup (i_item_id, ca_country, ca_state, ca_county)
             | order by ca_country, ca_state, ca_county, i_item_id
             | LIMIT 100
-            """.stripMargin),
-    ("q19", """
+            """.stripMargin
+    ),
+    (
+      "q19",
+      """
             | select i_brand_id brand_id, i_brand brand, i_manufact_id, i_manufact,
             | 	sum(ss_ext_sales_price) ext_price
             | from date_dim, store_sales, item,customer,customer_address,store
@@ -943,8 +1000,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_brand, i_brand_id, i_manufact_id, i_manufact
             | order by ext_price desc, brand, brand_id, i_manufact_id, i_manufact
             | limit 100
-            """.stripMargin),
-    ("q20", """
+            """.stripMargin
+    ),
+    (
+      "q20",
+      """
             |select i_item_desc
             |       ,i_category
             |       ,i_class
@@ -961,9 +1021,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_id, i_item_desc, i_category, i_class, i_current_price
             | order by i_category, i_class, i_item_id, i_item_desc, revenueratio
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q21", """
+    (
+      "q21",
+      """
             | select * from(
             |   select w_warehouse_name, i_item_id,
             |          sum(case when (cast(d_date as date) < cast ('2000-03-11' as date))
@@ -986,8 +1049,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |             end) between 2.0/3.0 and 3.0/2.0
             | order by w_warehouse_name, i_item_id
             | limit 100
-            """.stripMargin),
-    ("q22", """
+            """.stripMargin
+    ),
+    (
+      "q22",
+      """
             | select i_product_name, i_brand, i_class, i_category, avg(inv_quantity_on_hand) qoh
             |       from inventory, date_dim, item, warehouse
             |       where inv_date_sk=d_date_sk
@@ -997,8 +1063,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |       group by rollup(i_product_name, i_brand, i_class, i_category)
             | order by qoh, i_product_name, i_brand, i_class, i_category
             | limit 100
-            """.stripMargin),
-    ("q23a", """
+            """.stripMargin
+    ),
+    (
+      "q23a",
+      """
             | with frequent_ss_items as
             | (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
             |  from store_sales, date_dim, item
@@ -1039,8 +1108,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |         and ws_item_sk in (select item_sk from frequent_ss_items)
             |         and ws_bill_customer_sk in (select c_customer_sk from best_ss_customer))) y
             | limit 100
-            """.stripMargin),
-    ("q23b", """
+            """.stripMargin
+    ),
+    (
+      "q23b",
+      """
             |
             | with frequent_ss_items as
             | (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
@@ -1088,8 +1160,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |       group by c_last_name,c_first_name)) y
             |     order by c_last_name,c_first_name,sales
             | limit 100
-            """.stripMargin),
-    ("q24a", """
+            """.stripMargin
+    ),
+    (
+      "q24a",
+      """
             | with ssales as
             | (select c_last_name, c_first_name, s_store_name, ca_state, s_state, i_color,
             |        i_current_price, i_manager_id, i_units, i_size, sum(ss_net_paid) netpaid
@@ -1109,8 +1184,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | where i_color = 'pale'
             | group by c_last_name, c_first_name, s_store_name
             | having sum(netpaid) > (select 0.05*avg(netpaid) from ssales)
-            """.stripMargin),
-    ("q24b", """
+            """.stripMargin
+    ),
+    (
+      "q24b",
+      """
             | with ssales as
             | (select c_last_name, c_first_name, s_store_name, ca_state, s_state, i_color,
             |         i_current_price, i_manager_id, i_units, i_size, sum(ss_net_paid) netpaid
@@ -1130,8 +1208,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | where i_color = 'chiffon'
             | group by c_last_name, c_first_name, s_store_name
             | having sum(netpaid) > (select 0.05*avg(netpaid) from ssales)
-            """.stripMargin),
-    ("q25", """
+            """.stripMargin
+    ),
+    (
+      "q25",
+      """
             | select i_item_id, i_item_desc, s_store_id, s_store_name,
             |    sum(ss_net_profit) as store_sales_profit,
             |    sum(sr_net_loss) as store_returns_loss,
@@ -1161,8 +1242,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | order by
             |    i_item_id, i_item_desc, s_store_id, s_store_name
             | limit 100
-            """.stripMargin),
-    ("q26", """
+            """.stripMargin
+    ),
+    (
+      "q26",
+      """
             | select i_item_id,
             |        avg(cs_quantity) agg1,
             |        avg(cs_list_price) agg2,
@@ -1181,8 +1265,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_id
             | order by i_item_id
             | limit 100
-            """.stripMargin),
-    ("q27", """
+            """.stripMargin
+    ),
+    (
+      "q27",
+      """
             | select i_item_id,
             |        s_state, grouping(s_state) g_state,
             |        avg(ss_quantity) agg1,
@@ -1202,8 +1289,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by rollup (i_item_id, s_state)
             | order by i_item_id, s_state
             | limit 100
-            """.stripMargin),
-    ("q28", """
+            """.stripMargin
+    ),
+    (
+      "q28",
+      """
             | select *
             | from (select avg(ss_list_price) B1_LP
             |            ,count(ss_list_price) B1_CNT
@@ -1254,8 +1344,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |             or ss_coupon_amt between 7326 and 7326+1000
             |             or ss_wholesale_cost between 7 and 7+20)) B6
             | limit 100
-            """.stripMargin),
-    ("q29", """
+            """.stripMargin
+    ),
+    (
+      "q29",
+      """
             | select
             |     i_item_id
             |    ,i_item_desc
@@ -1288,8 +1381,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | order by
             |    i_item_id, i_item_desc, s_store_id, s_store_name
             | limit 100
-            """.stripMargin),
-    ("q30", """
+            """.stripMargin
+    ),
+    (
+      "q30",
+      """
             | with customer_total_return as
             | (select wr_returning_customer_sk as ctr_customer_sk
             |        ,ca_state as ctr_state,
@@ -1313,8 +1409,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |                  ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
             |                  ,c_last_review_date,ctr_total_return
             | limit 100
-            """.stripMargin),
-    ("q31", """
+            """.stripMargin
+    ),
+    (
+      "q31",
+      """
             | with ss as
             | (select ca_county,d_qoy, d_year,sum(ss_ext_sales_price) as store_sales
             | from store_sales,date_dim,customer_address
@@ -1359,9 +1458,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |    and case when ws2.web_sales > 0 then ws3.web_sales/ws2.web_sales else null end
             |       > case when ss2.store_sales > 0 then ss3.store_sales/ss2.store_sales else null end
             | order by ss1.ca_county
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: " -> `
-    ("q32", """
+    (
+      "q32",
+      """
             | select sum(cs_ext_discount_amt) as `excess discount amount`
             | from
             |    catalog_sales, item, date_dim
@@ -1377,8 +1479,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |           and d_date between '2000-01-27]' and (cast('2000-01-27' as date) + interval 90 days)
             |           and d_date_sk = cs_sold_date_sk)
             |limit 100
-            """.stripMargin),
-    ("q33", """
+            """.stripMargin
+    ),
+    (
+      "q33",
+      """
             | with ss as (
             |    select
             |        i_manufact_id,sum(ss_ext_sales_price) total_sales
@@ -1432,8 +1537,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_manufact_id
             | order by total_sales
             |limit 100
-            """.stripMargin),
-    ("q34", """
+            """.stripMargin
+    ),
+    (
+      "q34",
+      """
             | select c_last_name, c_first_name, c_salutation, c_preferred_cust_flag, ss_ticket_number,
             |        cnt
             | FROM
@@ -1457,8 +1565,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |    where ss_customer_sk = c_customer_sk
             |      and cnt between 15 and 20
             |    order by c_last_name,c_first_name,c_salutation,c_preferred_cust_flag desc
-            """.stripMargin),
-    ("q35", """
+            """.stripMargin
+    ),
+    (
+      "q35",
+      """
             | select
             |  ca_state,
             |  cd_gender,
@@ -1502,8 +1613,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | order by ca_state, cd_gender, cd_marital_status, cd_dep_count,
             |          cd_dep_employed_count, cd_dep_college_count
             | limit 100
-            """.stripMargin),
-    ("q36", """
+            """.stripMargin
+    ),
+    (
+      "q36",
+      """
             | select
             |    sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
             |   ,i_category
@@ -1527,9 +1641,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |  ,case when lochierarchy = 0 then i_category end
             |  ,rank_within_parent
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q37", """
+    (
+      "q37",
+      """
             | select i_item_id, i_item_desc, i_current_price
             | from item, inventory, date_dim, catalog_sales
             | where i_current_price between 68 and 68 + 30
@@ -1542,8 +1659,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_id,i_item_desc,i_current_price
             | order by i_item_id
             | limit 100
-            """.stripMargin),
-    ("q38", """
+            """.stripMargin
+    ),
+    (
+      "q38",
+      """
             | select count(*) from (
             |    select distinct c_last_name, c_first_name, d_date
             |    from store_sales, date_dim, customer
@@ -1564,8 +1684,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |      and d_month_seq between  1200 and  1200 + 11
             | ) hot_cust
             | limit 100
-            """.stripMargin),
-    ("q39a", """
+            """.stripMargin
+    ),
+    (
+      "q39a",
+      """
             | with inv as
             | (select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
             |        ,stdev,mean, case mean when 0 then null else stdev/mean end cov
@@ -1587,8 +1710,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and inv2.d_moy=1+1
             | order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
             |         ,inv2.d_moy,inv2.mean, inv2.cov
-            """.stripMargin),
-    ("q39b", """
+            """.stripMargin
+    ),
+    (
+      "q39b",
+      """
             | with inv as
             | (select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
             |        ,stdev,mean, case mean when 0 then null else stdev/mean end cov
@@ -1611,9 +1737,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and inv1.cov > 1.5
             | order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
             |         ,inv2.d_moy,inv2.mean, inv2.cov
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q40", """
+    (
+      "q40",
+      """
             | select
             |   w_state
             |  ,i_item_id
@@ -1636,8 +1765,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by w_state,i_item_id
             | order by w_state,i_item_id
             | limit 100
-            """.stripMargin),
-    ("q41", """
+            """.stripMargin
+    ),
+    (
+      "q41",
+      """
             | select distinct(i_product_name)
             | from item i1
             | where i_manufact_id between 738 and 738+40
@@ -1687,8 +1819,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |        )))) > 0
             | order by i_product_name
             | limit 100
-            """.stripMargin),
-    ("q42", """
+            """.stripMargin
+    ),
+    (
+      "q42",
+      """
             | select dt.d_year, item.i_category_id, item.i_category, sum(ss_ext_sales_price)
             | from 	date_dim dt, store_sales, item
             | where dt.d_date_sk = store_sales.ss_sold_date_sk
@@ -1703,8 +1838,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | 		,item.i_category_id
             | 		,item.i_category
             | limit 100
-            """.stripMargin),
-    ("q43", """
+            """.stripMargin
+    ),
+    (
+      "q43",
+      """
             | select s_store_name, s_store_id,
             |        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
             |        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
@@ -1722,8 +1860,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | order by s_store_name, s_store_id,sun_sales,mon_sales,tue_sales,wed_sales,
             |          thu_sales,fri_sales,sat_sales
             | limit 100
-            """.stripMargin),
-    ("q44", """
+            """.stripMargin
+    ),
+    (
+      "q44",
+      """
             | select asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
             | from(select *
             |     from (select item_sk,rank() over (order by rank_col asc) rnk
@@ -1755,8 +1896,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and i2.i_item_sk=descending.item_sk
             | order by asceding.rnk
             | limit 100
-            """.stripMargin),
-    ("q45", """
+            """.stripMargin
+    ),
+    (
+      "q45",
+      """
             | select ca_zip, ca_city, sum(ws_sales_price)
             | from web_sales, customer, customer_address, date_dim, item
             | where ws_bill_customer_sk = c_customer_sk
@@ -1774,8 +1918,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by ca_zip, ca_city
             | order by ca_zip, ca_city
             | limit 100
-            """.stripMargin),
-    ("q46", """
+            """.stripMargin
+    ),
+    (
+      "q46",
+      """
             | select c_last_name, c_first_name, ca_city, bought_city, ss_ticket_number, amt,profit
             | from
             |   (select ss_ticket_number
@@ -1799,8 +1946,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |      and current_addr.ca_city <> bought_city
             |  order by c_last_name, c_first_name, ca_city, bought_city, ss_ticket_number
             |  limit 100
-            """.stripMargin),
-    ("q47", """
+            """.stripMargin
+    ),
+    (
+      "q47",
+      """
             | with v1 as(
             | select i_category, i_brand,
             |        s_store_name, s_company_name,
@@ -1847,8 +1997,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
             | order by sum_sales - avg_monthly_sales, 3
             | limit 100
-            """.stripMargin),
-    ("q48", """
+            """.stripMargin
+    ),
+    (
+      "q48",
+      """
             | select sum (ss_quantity)
             | from store_sales, store, customer_demographics, customer_address, date_dim
             | where s_store_sk = ss_store_sk
@@ -1912,9 +2065,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |  and ss_net_profit between 50 and 25000
             |  )
             | )
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "dec" -> "decimal"
-    ("q49", """
+    (
+      "q49",
+      """
             | select 'web' as channel, web.item, web.return_ratio, web.return_rank, web.currency_rank
             | from (
             | 	select
@@ -2010,9 +2166,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | where (store.return_rank <= 10 or store.currency_rank <= 10)
             | order by 1,4,5
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: " -> `
-    ("q50", """
+    (
+      "q50",
+      """
             | select
             |    s_store_name, s_company_id, s_street_number, s_street_name, s_street_type,
             |    s_suite_number, s_city, s_county, s_state, s_zip
@@ -2042,8 +2201,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |     s_store_name, s_company_id, s_street_number, s_street_name, s_street_type,
             |     s_suite_number, s_city, s_county, s_state, s_zip
             |  limit 100
-            """.stripMargin),
-    ("q51", """
+            """.stripMargin
+    ),
+    (
+      "q51",
+      """
             | WITH web_v1 as (
             | select
             |   ws_item_sk item_sk, d_date,
@@ -2080,8 +2242,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | where web_cumulative > store_cumulative
             | order by item_sk, d_date
             | limit 100
-            """.stripMargin),
-    ("q52", """
+            """.stripMargin
+    ),
+    (
+      "q52",
+      """
             | select dt.d_year
             | 	,item.i_brand_id brand_id
             | 	,item.i_brand brand
@@ -2095,8 +2260,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by dt.d_year, item.i_brand, item.i_brand_id
             | order by dt.d_year, ext_price desc, brand_id
             |limit 100
-            """.stripMargin),
-    ("q53", """
+            """.stripMargin
+    ),
+    (
+      "q53",
+      """
             | select * from
             |   (select i_manufact_id,
             |           sum(ss_sales_price) sum_sales,
@@ -2124,8 +2292,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |  	 sum_sales,
             | 	 i_manufact_id
             | limit 100
-            """.stripMargin),
-    ("q54", """
+            """.stripMargin
+    ),
+    (
+      "q54",
+      """
             | with my_customers as (
             | select distinct c_customer_sk
             |        , c_current_addr_sk
@@ -2177,8 +2348,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by segment
             | order by segment, num_customers
             | limit 100
-            """.stripMargin),
-    ("q55", """
+            """.stripMargin
+    ),
+    (
+      "q55",
+      """
             |select i_brand_id brand_id, i_brand brand,
             | 	sum(ss_ext_sales_price) ext_price
             | from date_dim, store_sales, item
@@ -2190,8 +2364,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_brand, i_brand_id
             | order by ext_price desc, brand_id
             | limit 100
-            """.stripMargin),
-    ("q56", """
+            """.stripMargin
+    ),
+    (
+      "q56",
+      """
             | with ss as (
             | select i_item_id,sum(ss_ext_sales_price) total_sales
             | from
@@ -2240,8 +2417,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_id
             | order by total_sales
             | limit 100
-            """.stripMargin),
-    ("q57", """
+            """.stripMargin
+    ),
+    (
+      "q57",
+      """
             | with v1 as(
             | select i_category, i_brand,
             |        cc_name,
@@ -2283,8 +2463,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
             | order by sum_sales - avg_monthly_sales, 3
             | limit 100
-            """.stripMargin),
-    ("q58", """
+            """.stripMargin
+    ),
+    (
+      "q58",
+      """
             | with ss_items as
             | (select i_item_id item_id, sum(ss_ext_sales_price) ss_item_rev
             | from store_sales, item, date_dim
@@ -2338,8 +2521,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and ws_item_rev between 0.9 * cs_item_rev and 1.1 * cs_item_rev
             | order by item_id, ss_item_rev
             | limit 100
-            """.stripMargin),
-    ("q59", """
+            """.stripMargin
+    ),
+    (
+      "q59",
+      """
             | with wss as
             | (select d_week_seq,
             |        ss_store_sk,
@@ -2381,8 +2567,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and d_week_seq1=d_week_seq2-52
             | order by s_store_name1,s_store_id1,d_week_seq1
             | limit 100
-            """.stripMargin),
-    ("q60", """
+            """.stripMargin
+    ),
+    (
+      "q60",
+      """
             | with ss as (
             |    select i_item_id,sum(ss_ext_sales_price) total_sales
             |    from store_sales, date_dim, customer_address, item
@@ -2428,8 +2617,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_id
             | order by i_item_id, total_sales
             | limit 100
-            """.stripMargin),
-    ("q61", s"""
+            """.stripMargin
+    ),
+    (
+      "q61",
+      s"""
             | select promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
             | from
             |   (select sum(ss_ext_sales_price) promotions
@@ -2460,9 +2652,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |     and   d_moy  = 11) all_sales
             | order by promotions, total
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: " -> `
-    ("q62", """
+    (
+      "q62",
+      """
             | select
             |   substr(w_warehouse_name,1,20)
             |  ,sm_type
@@ -2488,8 +2683,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | order by
             |    substr(w_warehouse_name,1,20), sm_type, web_name
             | limit 100
-            """.stripMargin),
-    ("q63", """
+            """.stripMargin
+    ),
+    (
+      "q63",
+      """
             | select *
             | from (select i_manager_id
             |              ,sum(ss_sales_price) sum_sales
@@ -2517,8 +2715,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |         ,avg_monthly_sales
             |         ,sum_sales
             | limit 100
-            """.stripMargin),
-    ("q64", """
+            """.stripMargin
+    ),
+    (
+      "q64",
+      """
             | with cs_ui as
             |  (select cs_item_sk
             |         ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
@@ -2576,8 +2777,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |      cs1.store_name = cs2.store_name and
             |      cs1.store_zip = cs2.store_zip
             | order by cs1.product_name, cs1.store_name, cs2.cnt
-            """.stripMargin),
-    ("q65", """
+            """.stripMargin
+    ),
+    (
+      "q65",
+      """
             | select
             |	  s_store_name, i_item_desc, sc.revenue, i_current_price, i_wholesale_cost, i_brand
             | from store, item,
@@ -2599,9 +2803,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |       i_item_sk = sc.ss_item_sk
             | order by s_store_name, i_item_desc
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "||" -> concat
-    ("q66", """
+    (
+      "q66",
+      """
             | select w_warehouse_name, w_warehouse_sq_ft, w_city, w_county, w_state, w_country,
             |    ship_carriers, year
             | 	  ,sum(jan_sales) as jan_sales
@@ -2728,8 +2935,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |    ship_carriers, year
             | order by w_warehouse_name
             | limit 100
-            """.stripMargin),
-    ("q67", """
+            """.stripMargin
+    ),
+    (
+      "q67",
+      """
             | select * from
             |     (select i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy, s_store_id,
             |             sumsales, rank() over (partition by i_category order by sumsales desc) rk
@@ -2748,8 +2958,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   i_category, i_class, i_brand, i_product_name, d_year,
             |   d_qoy, d_moy, s_store_id, sumsales, rk
             | limit 100
-            """.stripMargin),
-    ("q68", """
+            """.stripMargin
+    ),
+    (
+      "q68",
+      """
             | select
             |    c_last_name, c_first_name, ca_city, bought_city, ss_ticket_number, extended_price,
             |    extended_tax, list_price
@@ -2776,8 +2989,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and current_addr.ca_city <> bought_city
             | order by c_last_name, ss_ticket_number
             | limit 100
-            """.stripMargin),
-    ("q69", """
+            """.stripMargin
+    ),
+    (
+      "q69",
+      """
             | select
             |    cd_gender, cd_marital_status, cd_education_status, count(*) cnt1,
             |    cd_purchase_estimate, count(*) cnt2, cd_credit_rating, count(*) cnt3
@@ -2807,8 +3023,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | order by cd_gender, cd_marital_status, cd_education_status,
             |          cd_purchase_estimate, cd_credit_rating
             | limit 100
-            """.stripMargin),
-    ("q70", """
+            """.stripMargin
+    ),
+    (
+      "q70",
+      """
             | select
             |    sum(ss_net_profit) as total_sum, s_state, s_county
             |   ,grouping(s_state)+grouping(s_county) as lochierarchy
@@ -2838,8 +3057,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |  ,case when lochierarchy = 0 then s_state end
             |  ,rank_within_parent
             | limit 100
-            """.stripMargin),
-    ("q71", """
+            """.stripMargin
+    ),
+    (
+      "q71",
+      """
             | select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
             | 	  sum(ext_price) ext_price
             | from item,
@@ -2880,9 +3102,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and (t_meal_time = 'breakfast' or t_meal_time = 'dinner')
             | group by i_brand, i_brand_id,t_hour,t_minute
             | order by ext_price desc, brand_id
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q72", """
+    (
+      "q72",
+      """
             | select i_item_desc
             |       ,w_warehouse_name
             |       ,d1.d_week_seq
@@ -2911,8 +3136,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_desc,w_warehouse_name,d1.d_week_seq
             | order by total_cnt desc, i_item_desc, w_warehouse_name, d_week_seq
             | limit 100
-            """.stripMargin),
-    ("q73", """
+            """.stripMargin
+    ),
+    (
+      "q73",
+      """
             | select
             |    c_last_name, c_first_name, c_salutation, c_preferred_cust_flag,
             |    ss_ticket_number, cnt from
@@ -2933,8 +3161,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |    where ss_customer_sk = c_customer_sk
             |      and cnt between 1 and 5
             |    order by cnt desc
-            """.stripMargin),
-    ("q74", """
+            """.stripMargin
+    ),
+    (
+      "q74",
+      """
             | with year_total as (
             | select
             |    c_customer_id customer_id, c_first_name customer_first_name,
@@ -2981,8 +3212,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |      > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
             | order by 1, 1, 1
             | limit 100
-            """.stripMargin),
-    ("q75", """
+            """.stripMargin
+    ),
+    (
+      "q75",
+      """
             | WITH all_sales AS (
             |    SELECT
             |        d_year, i_brand_id, i_class_id, i_category_id, i_manufact_id,
@@ -3037,8 +3271,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   AND CAST(curr_yr.sales_cnt AS DECIMAL(17,2))/CAST(prev_yr.sales_cnt AS DECIMAL(17,2))<0.9
             | ORDER BY sales_cnt_diff
             | LIMIT 100
-            """.stripMargin),
-    ("q76", """
+            """.stripMargin
+    ),
+    (
+      "q76",
+      """
             | SELECT
             |    channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt,
             |    SUM(ext_sales_price) sales_amt
@@ -3069,9 +3306,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | GROUP BY channel, col_name, d_year, d_qoy, i_category
             | ORDER BY channel, col_name, d_year, d_qoy, i_category
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q77", """
+    (
+      "q77",
+      """
             | with ss as
             | (select s_store_sk, sum(ss_ext_sales_price) as sales, sum(ss_net_profit) as profit
             |  from store_sales, date_dim, store
@@ -3139,8 +3379,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by rollup(channel, id)
             | order by channel, id
             | limit 100
-            """.stripMargin),
-    ("q78", """
+            """.stripMargin
+    ),
+    (
+      "q78",
+      """
             | with ws as
             |   (select d_year AS ws_sold_year, ws_item_sk,
             |     ws_bill_customer_sk ws_customer_sk,
@@ -3195,8 +3438,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   other_chan_sales_price,
             |   round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2)
             |  limit 100
-            """.stripMargin),
-    ("q79", """
+            """.stripMargin
+    ),
+    (
+      "q79",
+      """
             | select
             |  c_last_name,c_first_name,substr(s_city,1,30),ss_ticket_number,amt,profit
             |  from
@@ -3218,10 +3464,13 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |    where ss_customer_sk = c_customer_sk
             | order by c_last_name,c_first_name,substr(s_city,1,30), profit
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
     // Modifications: "||" -> "concat"
-    ("q80", """
+    (
+      "q80",
+      """
             | with ssr as
             | (select  s_store_id as store_id,
             |          sum(ss_ext_sales_price) as sales,
@@ -3289,8 +3538,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by rollup (channel, id)
             | order by channel, id
             | limit 100
-            """.stripMargin),
-    ("q81", """
+            """.stripMargin
+    ),
+    (
+      "q81",
+      """
             | with customer_total_return as
             | (select
             |    cr_returning_customer_sk as ctr_customer_sk, ca_state as ctr_state,
@@ -3315,8 +3567,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |                   ,ca_street_type,ca_suite_number,ca_city,ca_county,ca_state,ca_zip,ca_country,ca_gmt_offset
             |                  ,ca_location_type,ctr_total_return
             | limit 100
-            """.stripMargin),
-    ("q82", """
+            """.stripMargin
+    ),
+    (
+      "q82",
+      """
             | select i_item_id, i_item_desc, i_current_price
             | from item, inventory, date_dim, store_sales
             | where i_current_price between 62 and 62+30
@@ -3329,8 +3584,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by i_item_id,i_item_desc,i_current_price
             | order by i_item_id
             | limit 100
-            """.stripMargin),
-    ("q83", """
+            """.stripMargin
+    ),
+    (
+      "q83",
+      """
             | with sr_items as
             |  (select i_item_id item_id, sum(sr_return_quantity) sr_item_qty
             |   from store_returns, item, date_dim
@@ -3368,9 +3626,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and sr_items.item_id=wr_items.item_id
             | order by sr_items.item_id, sr_item_qty
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "||" -> concat
-    ("q84", """
+    (
+      "q84",
+      """
             | select c_customer_id as customer_id
             |       ,concat(c_last_name, ', ', c_first_name) as customername
             | from customer
@@ -3389,8 +3650,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   and sr_cdemo_sk = cd_demo_sk
             | order by c_customer_id
             | limit 100
-            """.stripMargin),
-    ("q85", """
+            """.stripMargin
+    ),
+    (
+      "q85",
+      """
             | select
             |    substr(r_reason_desc,1,20), avg(ws_quantity), avg(wr_refunded_cash), avg(wr_fee)
             | from web_sales, web_returns, web_page, customer_demographics cd1,
@@ -3470,8 +3734,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |        ,avg(wr_refunded_cash)
             |        ,avg(wr_fee)
             | limit 100
-            """.stripMargin),
-    ("q86", """
+            """.stripMargin
+    ),
+    (
+      "q86",
+      """
             | select sum(ws_net_paid) as total_sum, i_category, i_class,
             |  grouping(i_category)+grouping(i_class) as lochierarchy,
             |  rank() over (
@@ -3490,8 +3757,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |   case when lochierarchy = 0 then i_category end,
             |   rank_within_parent
             | limit 100
-            """.stripMargin),
-    ("q87", """
+            """.stripMargin
+    ),
+    (
+      "q87",
+      """
             | select count(*)
             | from ((select distinct c_last_name, c_first_name, d_date
             |       from store_sales, date_dim, customer
@@ -3511,8 +3781,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |         and web_sales.ws_bill_customer_sk = customer.c_customer_sk
             |         and d_month_seq between 1200 and 1200+11)
             |) cool_cust
-            """.stripMargin),
-    ("q88", """
+            """.stripMargin
+    ),
+    (
+      "q88",
+      """
             | select  *
             | from
             |   (select count(*) h8_30_to_9
@@ -3603,8 +3876,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |          (household_demographics.hd_dep_count = 2 and household_demographics.hd_vehicle_count<=2+2) or
             |          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2))
             |     and store.s_store_name = 'ese') s8
-            """.stripMargin),
-    ("q89", """
+            """.stripMargin
+    ),
+    (
+      "q89",
+      """
             | select *
             | from(
             | select i_category, i_class, i_brand,
@@ -3628,8 +3904,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | where case when (avg_monthly_sales <> 0) then (abs(sum_sales - avg_monthly_sales) / avg_monthly_sales) else null end > 0.1
             | order by sum_sales - avg_monthly_sales, s_store_name
             | limit 100
-            """.stripMargin),
-    ("q90", """
+            """.stripMargin
+    ),
+    (
+      "q90",
+      """
             | select cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
             | from ( select count(*) amc
             |       from web_sales, household_demographics , time_dim, web_page
@@ -3649,8 +3928,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |         and web_page.wp_char_count between 5000 and 5200) pt
             | order by am_pm_ratio
             | limit 100
-            """.stripMargin),
-    ("q91", """
+            """.stripMargin
+    ),
+    (
+      "q91",
+      """
             | select
             |        cc_call_center_id Call_Center, cc_name Call_Center_Name, cc_manager Manager,
             |        sum(cr_net_loss) Returns_Loss
@@ -3672,10 +3954,13 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | and    ca_gmt_offset            = -7
             | group by cc_call_center_id,cc_name,cc_manager,cd_marital_status,cd_education_status
             | order by sum(cr_net_loss) desc
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
     // Modifications: " -> `
-    ("q92", """
+    (
+      "q92",
+      """
             | select sum(ws_ext_discount_amt) as `Excess Discount Amount`
             | from web_sales, item, date_dim
             | where i_manufact_id = 350
@@ -3692,8 +3977,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |     )
             | order by sum(ws_ext_discount_amt)
             | limit 100
-            """.stripMargin),
-    ("q93", """
+            """.stripMargin
+    ),
+    (
+      "q93",
+      """
             | select ss_customer_sk, sum(act_sales) sumsales
             | from (select
             |         ss_item_sk, ss_ticket_number, ss_customer_sk,
@@ -3707,10 +3995,13 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | group by ss_customer_sk
             | order by sumsales, ss_customer_sk
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
     // Modifications: " -> `
-    ("q94", """
+    (
+      "q94",
+      """
             | select
             |    count(distinct ws_order_number) as `order count`
             |   ,sum(ws_ext_ship_cost) as `total shipping cost`
@@ -3734,9 +4025,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |                where ws1.ws_order_number = wr1.wr_order_number)
             | order by count(distinct ws_order_number)
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q95", """
+    (
+      "q95",
+      """
             | with ws_wh as
             | (select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
             |  from web_sales ws1,web_sales ws2
@@ -3763,8 +4057,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |                             where wr_order_number = ws_wh.ws_order_number)
             | order by count(distinct ws_order_number)
             | limit 100
-            """.stripMargin),
-    ("q96", """
+            """.stripMargin
+    ),
+    (
+      "q96",
+      """
             | select count(*)
             | from store_sales, household_demographics, time_dim, store
             | where ss_sold_time_sk = time_dim.t_time_sk
@@ -3776,8 +4073,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |     and store.s_store_name = 'ese'
             | order by count(*)
             | limit 100
-            """.stripMargin),
-    ("q97", """
+            """.stripMargin
+    ),
+    (
+      "q97",
+      """
             | with ssci as (
             | select ss_customer_sk customer_sk, ss_item_sk item_sk
             | from store_sales,date_dim
@@ -3796,9 +4096,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             | from ssci full outer join csci on (ssci.customer_sk=csci.customer_sk
             |                                and ssci.item_sk = csci.item_sk)
             | limit 100
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: "+ days" -> date_add
-    ("q98", """
+    (
+      "q98",
+      """
             |select i_item_desc, i_category, i_class, i_current_price
             |      ,sum(ss_ext_sales_price) as itemrevenue
             |      ,sum(ss_ext_sales_price)*100/sum(sum(ss_ext_sales_price)) over
@@ -3815,9 +4118,12 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |	i_item_id, i_item_desc, i_category, i_class, i_current_price
             |order by
             |	i_category, i_class, i_item_id, i_item_desc, revenueratio
-            """.stripMargin),
+            """.stripMargin
+    ),
     // Modifications: " -> `
-    ("q99", """
+    (
+      "q99",
+      """
             | select
             |    substr(w_warehouse_name,1,20), sm_type, cc_name
             |   ,sum(case when (cs_ship_date_sk - cs_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days`
@@ -3840,9 +4146,11 @@ trait Tpcds_1_4_Queries extends Benchmark {
             |    substr(w_warehouse_name,1,20), sm_type, cc_name
             | order by substr(w_warehouse_name,1,20), sm_type, cc_name
             | limit 100
-            """.stripMargin),
-      ("qSsMax",
-        """
+            """.stripMargin
+    ),
+    (
+      "qSsMax",
+      """
           |select
           |  count(*) as total,
           |  count(ss_sold_date_sk) as not_null_total,
@@ -3857,23 +4165,100 @@ trait Tpcds_1_4_Queries extends Benchmark {
           |  max(ss_store_sk) as max_ss_store_sk,
           |  max(ss_promo_sk) as max_ss_promo_sk
           |from store_sales
-        """.stripMargin)
-  ).map { case (name, sqlText) =>
-    Query(name + "-v1.4", sqlText, description = "TPCDS 1.4 Query", executionMode = CollectResults)
+        """.stripMargin
+    )
+  ).map {
+    case (name, sqlText) =>
+      Query(
+        name + "-v1.4",
+        sqlText,
+        description = "TPCDS 1.4 Query",
+        executionMode = CollectResults
+      )
   }
   val tpcds1_4QueriesMap = tpcds1_4Queries.map(q => q.name.split("-").get(0) -> q).toMap
 
   val runnable: Seq[Query] = Seq(
-    "q1", "q2", "q3", "q4", "q5", "q7", "q8", "q9",
-    "q11", "q12", "q13", "q15", "q17", "q18", "q19",
-    "q20", "q21", "q22", "q25", "q26", "q27", "q28", "q29",
-    "q31", "q34", "q36", "q37", "q38", "q39a", "q39b",
-    "q40", "q42", "q43", "q44", "q46", "q47", "q48", "q49",
-    "q50", "q51", "q52", "q53", "q54", "q55", "q57", "q59",
-    "q61", "q62", "q63", "q64", "q65", "q66", "q67", "q68",
-    "q71", "q72", "q73", "q74", "q75", "q76", "q77", "q78", "q79",
-    "q80", "q82", "q84", "q85", "q86", "q87", "q88", "q89",
-    "q90", "q91", "q93", "q96", "q97", "q98", "q99", "qSsMax").map(tpcds1_4QueriesMap)
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q7",
+    "q8",
+    "q9",
+    "q11",
+    "q12",
+    "q13",
+    "q15",
+    "q17",
+    "q18",
+    "q19",
+    "q20",
+    "q21",
+    "q22",
+    "q25",
+    "q26",
+    "q27",
+    "q28",
+    "q29",
+    "q31",
+    "q34",
+    "q36",
+    "q37",
+    "q38",
+    "q39a",
+    "q39b",
+    "q40",
+    "q42",
+    "q43",
+    "q44",
+    "q46",
+    "q47",
+    "q48",
+    "q49",
+    "q50",
+    "q51",
+    "q52",
+    "q53",
+    "q54",
+    "q55",
+    "q57",
+    "q59",
+    "q61",
+    "q62",
+    "q63",
+    "q64",
+    "q65",
+    "q66",
+    "q67",
+    "q68",
+    "q71",
+    "q72",
+    "q73",
+    "q74",
+    "q75",
+    "q76",
+    "q77",
+    "q78",
+    "q79",
+    "q80",
+    "q82",
+    "q84",
+    "q85",
+    "q86",
+    "q87",
+    "q88",
+    "q89",
+    "q90",
+    "q91",
+    "q93",
+    "q96",
+    "q97",
+    "q98",
+    "q99",
+    "qSsMax"
+  ).map(tpcds1_4QueriesMap)
 
   val all: Seq[Query] = tpcds1_4QueriesMap.values.toSeq
 }

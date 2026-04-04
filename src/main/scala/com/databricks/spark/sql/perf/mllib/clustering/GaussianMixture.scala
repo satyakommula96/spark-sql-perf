@@ -12,9 +12,14 @@ object GaussianMixture extends BenchmarkAlgorithm with TestFromTraining {
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    DataGenerator.generateGaussianMixtureData(ctx.sqlContext, numCenters = k,
-      numExamples = numExamples, seed = ctx.seed(), numPartitions = numPartitions,
-      numFeatures = numFeatures)
+    DataGenerator.generateGaussianMixtureData(
+      ctx.sqlContext,
+      numCenters = k,
+      numExamples = numExamples,
+      seed = ctx.seed(),
+      numPartitions = numPartitions,
+      numFeatures = numFeatures
+    )
   }
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {

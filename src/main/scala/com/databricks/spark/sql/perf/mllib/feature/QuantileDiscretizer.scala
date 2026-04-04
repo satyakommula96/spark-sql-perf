@@ -16,15 +16,20 @@ object QuantileDiscretizer extends BenchmarkAlgorithm with TestFromTraining with
     import ctx.params._
     import ctx.sqlContext.implicits._
 
-    DataGenerator.generateContinuousFeatures(
-      ctx.sqlContext,
-      numExamples,
-      ctx.seed(),
-      numPartitions,
-      1
-    ).rdd.map { case Row(vec: Vector) =>
-      vec(0) // extract the single generated double value for each row
-    }.toDF(inputCol)
+    DataGenerator
+      .generateContinuousFeatures(
+        ctx.sqlContext,
+        numExamples,
+        ctx.seed(),
+        numPartitions,
+        1
+      )
+      .rdd
+      .map {
+        case Row(vec: Vector) =>
+          vec(0) // extract the single generated double value for each row
+      }
+      .toDF(inputCol)
   }
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {

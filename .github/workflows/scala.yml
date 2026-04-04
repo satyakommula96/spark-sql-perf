@@ -9,44 +9,74 @@ on:
       - master
 
 jobs:
-  build:
+  scalafmt-check:
+    name: Scalafmt Check
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'adopt'
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
 
-    - name: Cache sbt
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.ivy2/cache
-          ~/.sbt
-          ~/.coursier
-        key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-        restore-keys: |
-          ${{ runner.os }}-sbt-
+      - name: Cache sbt
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+            ~/.coursier
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
 
-    - name: Build with sbt
-      run: ./build/sbt compile
+      - name: Check formatting with scalafmt
+        run: sbt scalafmtCheck
 
-    - name: Package with sbt
-      run: ./build/sbt package
+  build:
+    name: Build & Package
+    runs-on: ubuntu-22.04
+    needs: scalafmt-check
 
-    - name: Extract version
-      id: extract_version
-      run: |
-        version=$(cat version.sbt | grep 'version in ThisBuild :=' | awk -F'\"' '{print $2}')
-        echo "version=$version" >> $GITHUB_ENV
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Upload JAR artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: spark-sql-perf_2.12-${{ env.version }}.jar
-        path: target/scala-2.12/*.jar
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Cache sbt
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+            ~/.coursier
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+
+      - name: Compile
+        run: sbt compile
+
+      - name: Package
+        run: sbt package
+
+      - name: Extract version
+        id: extract_version
+        run: |
+          version=$(cat version.sbt | grep 'version in ThisBuild :=' | awk -F'"' '{print $2}')
+          echo "version=$version" >> $GITHUB_ENV
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spark-sql-perf_2.12-${{ env.version }}.jar
+          path: target/scala-2.12/*.jar

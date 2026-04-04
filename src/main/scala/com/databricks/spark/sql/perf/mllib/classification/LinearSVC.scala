@@ -9,8 +9,11 @@ import com.databricks.spark.sql.perf.mllib.OptionImplicits._
 import com.databricks.spark.sql.perf.mllib._
 import com.databricks.spark.sql.perf.mllib.data.DataGenerator
 
-object LinearSVC extends BenchmarkAlgorithm
-  with TestFromTraining with TrainingSetFromTransformer with ScoringWithEvaluator {
+object LinearSVC
+    extends BenchmarkAlgorithm
+    with TestFromTraining
+    with TrainingSetFromTransformer
+    with ScoringWithEvaluator {
 
   override protected def initialData(ctx: MLBenchContext) = {
     import ctx.params._
@@ -19,7 +22,8 @@ object LinearSVC extends BenchmarkAlgorithm
       numExamples,
       ctx.seed(),
       numPartitions,
-      numFeatures)
+      numFeatures
+    )
   }
 
   override protected def trueModel(ctx: MLBenchContext): Transformer = {
@@ -42,4 +46,3 @@ object LinearSVC extends BenchmarkAlgorithm
   override protected def evaluator(ctx: MLBenchContext): Evaluator =
     new MulticlassClassificationEvaluator()
 }
-

@@ -24,25 +24,25 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.execution.SparkPlan
 
-
 /** Holds one benchmark query and its metadata. */
 class Query(
     override val name: String,
     buildDataFrame: => DataFrame,
     val description: String = "",
     val sqlText: Option[String] = None,
-    override val executionMode: ExecutionMode = ExecutionMode.ForeachResults)
-  extends Benchmarkable with Serializable {
+    override val executionMode: ExecutionMode = ExecutionMode.ForeachResults
+) extends Benchmarkable
+    with Serializable {
 
   private implicit def toOption[A](a: A): Option[A] = Option(a)
 
-  override def toString: String = {
-    try {
+  override def toString: String =
+    try
       s"""
          |== Query: $name ==
          |${buildDataFrame.queryExecution.analyzed}
      """.stripMargin
-    } catch {
+    catch {
       case e: Exception =>
         s"""
            |== Query: $name ==
@@ -51,7 +51,6 @@ class Query(
            | $description
          """.stripMargin
     }
-  }
 
   lazy val tablesInvolved = buildDataFrame.queryExecution.logical collect {
     case r: UnresolvedRelation => r.tableName
@@ -63,9 +62,10 @@ class Query(
       includeBreakdown: Boolean,
       description: String = "",
       messages: ArrayBuffer[String],
-      iteration: Int = 1): BenchmarkResult = {
+      iteration: Int = 1
+  ): BenchmarkResult =
     try {
-      val dataFrame = buildDataFrame
+      val dataFrame      = buildDataFrame
       val queryExecution = dataFrame.queryExecution
       // We are not counting the time of ScalaReflection.convertRowToScala.
       val parsingTime = measureTimeMs {
@@ -82,11 +82,11 @@ class Query(
       }
 
       val breakdownResults = if (includeBreakdown) {
-        val depth = queryExecution.executedPlan.collect { case p: SparkPlan => p }.size
+        val depth             = queryExecution.executedPlan.collect { case p: SparkPlan => p }.size
         val physicalOperators = (0 until depth).map(i => (i, queryExecution.executedPlan.p(i)))
-        val indexMap = physicalOperators.map { case (index, op) => (op, index) }.toMap
-        val timeMap = new mutable.HashMap[Int, Double]
-        val maxFields = 999 // Maximum number of fields that will be converted to strings
+        val indexMap          = physicalOperators.map { case (index, op) => (op, index) }.toMap
+        val timeMap           = new mutable.HashMap[Int, Double]
+        val maxFields         = 999 // Maximum number of fields that will be converted to strings
 
         physicalOperators.reverse.map {
           case (index, node) =>
@@ -98,7 +98,7 @@ class Query(
             timeMap += ((index, executionTime))
 
             val childIndexes = node.children.map(indexMap)
-            val childTime = childIndexes.map(timeMap).sum
+            val childTime    = childIndexes.map(timeMap).sum
             messages += s"Breakdown time: $executionTime (+${executionTime - childTime})"
 
             BreakdownResult(
@@ -107,7 +107,8 @@ class Query(
               index,
               childIndexes,
               executionTime,
-              executionTime - childTime)
+              executionTime - childTime
+            )
         }
       } else {
         Seq.empty[BreakdownResult]
@@ -121,7 +122,7 @@ class Query(
       val executionTime = measureTimeMs {
         executionMode match {
           case ExecutionMode.CollectResults => dataFrame.collect()
-          case ExecutionMode.ForeachResults => dataFrame.foreach { _ => ():Unit }
+          case ExecutionMode.ForeachResults => dataFrame.foreach(_ => (): Unit)
           case ExecutionMode.WriteParquet(location) =>
             dataFrame.write.parquet(s"$location/$name.parquet")
           case ExecutionMode.HashResults =>
@@ -150,18 +151,20 @@ class Query(
         executionTime = executionTime,
         result = result,
         queryExecution = dataFrame.queryExecution.toString,
-        breakDown = breakdownResults)
+        breakDown = breakdownResults
+      )
     } catch {
       case e: Exception =>
-         BenchmarkResult(
-           name = name,
-           mode = executionMode.toString,
-           failure = Failure(e.getClass.getName, e.getMessage))
+        BenchmarkResult(
+          name = name,
+          mode = executionMode.toString,
+          failure = Failure(e.getClass.getName, e.getMessage)
+        )
     }
-  }
 
-  /** Change the ExecutionMode of this Query to HashResults, which is used to check the query result. */
-  def checkResult: Query = {
+  /** Change the ExecutionMode of this Query to HashResults, which is used to check the query
+    * result.
+    */
+  def checkResult: Query =
     new Query(name, buildDataFrame, description, sqlText, ExecutionMode.HashResults)
-  }
 }

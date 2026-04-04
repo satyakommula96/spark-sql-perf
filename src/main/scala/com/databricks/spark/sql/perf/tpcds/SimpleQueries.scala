@@ -16,32 +16,38 @@
 
 package com.databricks.spark.sql.perf.tpcds
 
-import com.databricks.spark.sql.perf.{ExecutionMode, Benchmark}
+import com.databricks.spark.sql.perf.{Benchmark, ExecutionMode}
 
 trait SimpleQueries extends Benchmark {
 
   import ExecutionMode._
 
-   val targetedPerfQueries = Seq(
-     // Query to measure scan performance.
-     ("stores-sales-scan",
-       """
+  val targetedPerfQueries = Seq(
+    // Query to measure scan performance.
+    (
+      "stores-sales-scan",
+      """
          |select * from store_sales where ss_item_sk = 1
-       """.stripMargin),
-     ("fact-fact-join",
-       """
+       """.stripMargin
+    ),
+    (
+      "fact-fact-join",
+      """
          | select count(*) from store_sales
          | join store_returns
          | on store_sales.ss_item_sk = store_returns.sr_item_sk
          | and store_sales.ss_ticket_number = store_returns.sr_ticket_number
-       """.stripMargin)
-   ).map { case (name, sqlText) =>
-     Query(name = name, sqlText = sqlText, description = "", executionMode = ForeachResults)
-   }
+       """.stripMargin
+    )
+  ).map {
+    case (name, sqlText) =>
+      Query(name = name, sqlText = sqlText, description = "", executionMode = ForeachResults)
+  }
 
-   val q7Derived = Seq(
-     ("q7-simpleScan",
-       """
+  val q7Derived = Seq(
+    (
+      "q7-simpleScan",
+      """
          |select
          |  ss_quantity,
          |  ss_list_price,
@@ -54,9 +60,11 @@ trait SimpleQueries extends Benchmark {
          |from store_sales
          |where
          |  ss_sold_date_sk between 2450815 and 2451179
-       """.stripMargin),
-
-     ("q7-twoMapJoins", """
+       """.stripMargin
+    ),
+    (
+      "q7-twoMapJoins",
+      """
                           |select
                           |  i_item_id,
                           |  ss_quantity,
@@ -74,9 +82,11 @@ trait SimpleQueries extends Benchmark {
                           |  and cd_marital_status = 'W'
                           |  and cd_education_status = 'Primary'
                           |  and ss_sold_date_sk between 2450815 and 2451179 -- partition key filter
-                        """.stripMargin),
-
-     ("q7-fourMapJoins", """
+                        """.stripMargin
+    ),
+    (
+      "q7-fourMapJoins",
+      """
                            |select
                            |  i_item_id,
                            |  ss_quantity,
@@ -98,9 +108,11 @@ trait SimpleQueries extends Benchmark {
                            |  and d_year = 1998
                            |  -- and ss_date between '1998-01-01' and '1998-12-31'
                            |  and ss_sold_date_sk between 2450815 and 2451179 -- partition key filter
-                         """.stripMargin),
-
-     ("q7-noOrderBy", """
+                         """.stripMargin
+    ),
+    (
+      "q7-noOrderBy",
+      """
                         |select
                         |  i_item_id,
                         |  avg(ss_quantity) agg1,
@@ -124,9 +136,11 @@ trait SimpleQueries extends Benchmark {
                         |  and ss_sold_date_sk between 2450815 and 2451179 -- partition key filter
                         |group by
                         |  i_item_id
-                      """.stripMargin),
-
-     ("q7", """
+                      """.stripMargin
+    ),
+    (
+      "q7",
+      """
               |-- start query 1 in stream 0 using template query7.tpl
               |select
               |  i_item_id,
@@ -155,9 +169,11 @@ trait SimpleQueries extends Benchmark {
               |  i_item_id
               |limit 100
               |-- end query 1 in stream 0 using template query7.tpl
-            """.stripMargin),
-            
-      ("store_sales-selfjoin-1",   """
+            """.stripMargin
+    ),
+    (
+      "store_sales-selfjoin-1",
+      """
                                    |-- The join condition will yield many matches.
                                    |select
                                    |  t1.ss_quantity,
@@ -170,10 +186,11 @@ trait SimpleQueries extends Benchmark {
                                    |from store_sales t1 join store_sales t2 on t1.ss_item_sk = t2.ss_item_sk
                                    |where
                                    |  t1.ss_sold_date_sk between 2450815 and 2451179
-                                   """.stripMargin),
-
-	   
-      ("store_sales-selfjoin-2",   """
+                                   """.stripMargin
+    ),
+    (
+      "store_sales-selfjoin-2",
+      """
                                    |-- We ust comound primary key as the join condition. The size of output is comparable with the input table.
                                    |select
                                    |  t1.ss_quantity,
@@ -186,8 +203,10 @@ trait SimpleQueries extends Benchmark {
                                    |from store_sales t1 join store_sales t2 on t1.ss_item_sk = t2.ss_item_sk and t1.ss_ticket_number = t2.ss_ticket_number
                                    |where
                                    |  t1.ss_sold_date_sk between 2450815 and 2451179
-                                   """.stripMargin)
-   ).map { case (name, sqlText) =>
-     Query(name = name, sqlText = sqlText, description = "", executionMode = ForeachResults)
-   }
+                                   """.stripMargin
+    )
+  ).map {
+    case (name, sqlText) =>
+      Query(name = name, sqlText = sqlText, description = "", executionMode = ForeachResults)
+  }
 }

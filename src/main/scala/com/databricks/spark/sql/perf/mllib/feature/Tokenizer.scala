@@ -23,11 +23,11 @@ object Tokenizer extends BenchmarkAlgorithm with TestFromTraining with UnaryTran
       numPartitions,
       vocabSize,
       docLength,
-      inputCol)
+      inputCol
+    )
   }
 
-  override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {
+  override def getPipelineStage(ctx: MLBenchContext): PipelineStage =
     new ml.feature.Tokenizer()
       .setInputCol(inputCol)
-  }
 }

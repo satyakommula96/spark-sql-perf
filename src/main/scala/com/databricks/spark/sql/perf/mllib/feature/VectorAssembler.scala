@@ -13,29 +13,31 @@ import com.databricks.spark.sql.perf.mllib.{BenchmarkAlgorithm, MLBenchContext, 
 /** Object for testing VectorAssembler performance */
 object VectorAssembler extends BenchmarkAlgorithm with TestFromTraining {
 
-  private def getInputCols(numInputCols: Int): Array[String] = {
-    Array.tabulate(numInputCols)(i => s"c${i}")
-  }
+  private def getInputCols(numInputCols: Int): Array[String] =
+    Array.tabulate(numInputCols)(i => s"c$i")
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
 
-    require(numInputCols.get <= numFeatures.get,
-      s"numInputCols (${numInputCols}) cannot be greater than numFeatures (${numFeatures}).")
+    require(
+      numInputCols.get <= numFeatures.get,
+      s"numInputCols ($numInputCols) cannot be greater than numFeatures ($numFeatures)."
+    )
 
     val df = DataGenerator.generateContinuousFeatures(
       ctx.sqlContext,
       numExamples,
       ctx.seed(),
       numPartitions,
-      numFeatures)
+      numFeatures
+    )
 
     val slice = udf { (v: Vector, numSlices: Int) =>
       val data = v.toArray
-      val n = data.length.toLong
+      val n    = data.length.toLong
       (0 until numSlices).map { i =>
         val start = ((i * n) / numSlices).toInt
-        val end = ((i + 1) * n / numSlices).toInt
+        val end   = ((i + 1) * n / numSlices).toInt
         Vectors.dense(data.slice(start, end))
       }
     }

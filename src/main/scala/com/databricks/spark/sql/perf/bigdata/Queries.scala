@@ -16,7 +16,7 @@
 
 package com.databricks.spark.sql.perf.bigdata
 
-import com.databricks.spark.sql.perf.{ExecutionMode, Benchmark}
+import com.databricks.spark.sql.perf.{Benchmark, ExecutionMode}
 
 trait Queries extends Benchmark {
 
@@ -25,8 +25,7 @@ trait Queries extends Benchmark {
   val queries1to3 = Seq(
     Query(
       name = "q1A",
-      sqlText =
-        """
+      sqlText = """
         |SELECT
         |  pageURL,
         |  pageRank
@@ -35,12 +34,11 @@ trait Queries extends Benchmark {
         |  pageRank > 1000
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q1B",
-      sqlText =
-        """
+      sqlText = """
         |SELECT
         |  pageURL,
         |  pageRank
@@ -49,12 +47,11 @@ trait Queries extends Benchmark {
         |  pageRank > 100
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q1C",
-      sqlText =
-        """
+      sqlText = """
         |SELECT
         |  pageURL,
         |  pageRank
@@ -63,12 +60,11 @@ trait Queries extends Benchmark {
         |  pageRank > 10
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q2A",
-      sqlText =
-        """
+      sqlText = """
         |SELECT
         |  SUBSTR(sourceIP, 1, 8),
         |  SUM(adRevenue)
@@ -77,12 +73,11 @@ trait Queries extends Benchmark {
         |  SUBSTR(sourceIP, 1, 8)
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q2B",
-      sqlText =
-        """
+      sqlText = """
         |SELECT
         |  SUBSTR(sourceIP, 1, 10),
         |  SUM(adRevenue)
@@ -91,12 +86,11 @@ trait Queries extends Benchmark {
         |  SUBSTR(sourceIP, 1, 10)
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q2C",
-      sqlText =
-        """
+      sqlText = """
         |SELECT
         |  SUBSTR(sourceIP, 1, 12),
         |  SUM(adRevenue)
@@ -105,12 +99,11 @@ trait Queries extends Benchmark {
         |  SUBSTR(sourceIP, 1, 12)
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q3A",
-      sqlText =
-        """
+      sqlText = """
         |SELECT sourceIP, totalRevenue, avgPageRank
         |FROM
         |  (SELECT sourceIP,
@@ -124,12 +117,11 @@ trait Queries extends Benchmark {
         |ORDER BY totalRevenue DESC LIMIT 1
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q3B",
-      sqlText =
-        """
+      sqlText = """
         |SELECT sourceIP, totalRevenue, avgPageRank
         |FROM
         |  (SELECT sourceIP,
@@ -143,8 +135,8 @@ trait Queries extends Benchmark {
         |ORDER BY totalRevenue DESC LIMIT 1
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults),
-
+      executionMode = ForeachResults
+    ),
     Query(
       name = "q3C",
       sqlText = """
@@ -161,6 +153,7 @@ trait Queries extends Benchmark {
         |ORDER BY totalRevenue DESC LIMIT 1
         """.stripMargin,
       description = "",
-      executionMode = ForeachResults)
+      executionMode = ForeachResults
+    )
   )
 }

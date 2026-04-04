@@ -9,9 +9,11 @@ import com.databricks.spark.sql.perf.mllib.OptionImplicits._
 import com.databricks.spark.sql.perf.mllib._
 import com.databricks.spark.sql.perf.mllib.data.DataGenerator
 
-
-object GLMRegression extends BenchmarkAlgorithm with TestFromTraining with
-  TrainingSetFromTransformer with ScoringWithEvaluator {
+object GLMRegression
+    extends BenchmarkAlgorithm
+    with TestFromTraining
+    with TrainingSetFromTransformer
+    with ScoringWithEvaluator {
 
   override protected def initialData(ctx: MLBenchContext) = {
     import ctx.params._
@@ -20,7 +22,8 @@ object GLMRegression extends BenchmarkAlgorithm with TestFromTraining with
       numExamples,
       ctx.seed(),
       numPartitions,
-      numFeatures)
+      numFeatures
+    )
   }
 
   override protected def trueModel(ctx: MLBenchContext): Transformer = {
@@ -30,7 +33,7 @@ object GLMRegression extends BenchmarkAlgorithm with TestFromTraining with
       Vectors.dense(Array.fill[Double](ctx.params.numFeatures)(2 * rng.nextDouble() - 1))
     // Small intercept to prevent some skew in the data.
     val intercept = 0.01 * (2 * rng.nextDouble - 1)
-    val m = ModelBuilderSSP.newGLR(coefficients, intercept)
+    val m         = ModelBuilderSSP.newGLR(coefficients, intercept)
     m.set(m.link, link.get)
     m.set(m.family, family.get)
     m

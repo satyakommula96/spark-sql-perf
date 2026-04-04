@@ -16,12 +16,14 @@ object StringIndexer extends BenchmarkAlgorithm with TestFromTraining with Unary
     import ctx.params._
     import ctx.sqlContext.implicits._
 
-    DataGenerator.generateRandString(ctx.sqlContext,
+    DataGenerator.generateRandString(
+      ctx.sqlContext,
       numExamples,
       ctx.seed(),
       numPartitions,
       vocabSize,
-      inputCol)
+      inputCol
+    )
   }
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {

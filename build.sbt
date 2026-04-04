@@ -161,3 +161,8 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges
 )
 */
+
+assembly / assemblyMergeStrategy := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}

@@ -9,9 +9,11 @@ import com.databricks.spark.sql.perf.mllib.OptionImplicits._
 import com.databricks.spark.sql.perf.mllib._
 import com.databricks.spark.sql.perf.mllib.data.DataGenerator
 
-
-object LinearRegression extends BenchmarkAlgorithm with TestFromTraining with
-  TrainingSetFromTransformer with ScoringWithEvaluator {
+object LinearRegression
+    extends BenchmarkAlgorithm
+    with TestFromTraining
+    with TrainingSetFromTransformer
+    with ScoringWithEvaluator {
 
   override protected def initialData(ctx: MLBenchContext) = {
     import ctx.params._
@@ -20,7 +22,8 @@ object LinearRegression extends BenchmarkAlgorithm with TestFromTraining with
       numExamples,
       ctx.seed(),
       numPartitions,
-      numFeatures)
+      numFeatures
+    )
   }
 
   override protected def trueModel(ctx: MLBenchContext): Transformer = {

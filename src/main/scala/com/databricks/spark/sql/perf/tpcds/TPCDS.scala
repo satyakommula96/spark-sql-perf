@@ -21,18 +21,18 @@ import com.databricks.spark.sql.perf._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{SQLContext, SparkSession}
 
-/**
- * TPC-DS benchmark's dataset.
- *
- * @param sqlContext An existing SQLContext.
- */
+/** TPC-DS benchmark's dataset.
+  *
+  * @param sqlContext
+  *   An existing SQLContext.
+  */
 class TPCDS(@transient sqlContext: SQLContext)
-  extends Benchmark(sqlContext)
-  with ImpalaKitQueries
-  with SimpleQueries
-  with Tpcds_1_4_Queries
-  with Tpcds_2_4_Queries
-  with Serializable {
+    extends Benchmark(sqlContext)
+    with ImpalaKitQueries
+    with SimpleQueries
+    with Tpcds_1_4_Queries
+    with Tpcds_2_4_Queries
+    with Serializable {
 
   def this() = this(SparkSession.builder.getOrCreate().sqlContext)
 
@@ -50,17 +50,16 @@ class TPCDS(@transient sqlContext: SQLContext)
     println(setQuery)
     sql(setQuery)
   }
-  */
-
-  /**
-   * Simple utilities to run the queries without persisting the results.
    */
+
+  /** Simple utilities to run the queries without persisting the results.
+    */
   def explain(queries: Seq[Query], showPlan: Boolean = false): Unit = {
     val succeeded = mutable.ArrayBuffer.empty[String]
     queries.foreach { q =>
       println(s"Query: ${q.name}")
       try {
-        val df = sqlContext.sql(q.sqlText.get)
+        val df = spark.sql(q.sqlText.get)
         if (showPlan) {
           df.explain()
         } else {
@@ -80,28 +79,27 @@ class TPCDS(@transient sqlContext: SQLContext)
     val succeeded = mutable.ArrayBuffer.empty[String]
     queries.foreach { q =>
       println(s"Query: ${q.name}")
-      val start = System.currentTimeMillis()
-      val df = sqlContext.sql(q.sqlText.get)
-      var failed = false
+      val start    = System.currentTimeMillis()
+      val df       = spark.sql(q.sqlText.get)
+      var failed   = false
       val jobgroup = s"benchmark ${q.name}"
       val t = new Thread("query runner") {
-        override def run(): Unit = {
+        override def run(): Unit =
           try {
-            sqlContext.sparkContext.setJobGroup(jobgroup, jobgroup, true)
+            sparkContext.setJobGroup(jobgroup, jobgroup, true)
             df.show(numRows)
           } catch {
             case e: Exception =>
               println("Failed to run: " + e)
               failed = true
           }
-        }
       }
       t.setDaemon(true)
       t.start()
       t.join(timeout)
       if (t.isAlive) {
         println(s"Timeout after $timeout seconds")
-        sqlContext.sparkContext.cancelJobGroup(jobgroup)
+        sparkContext.cancelJobGroup(jobgroup)
         t.interrupt()
       } else {
         if (!failed) {
@@ -115,6 +113,3 @@ class TPCDS(@transient sqlContext: SQLContext)
     println(succeeded.map("\"" + _ + "\""))
   }
 }
-
-
-
