@@ -40,7 +40,7 @@ object BlockingLineStream {
   // See scala.sys.process.Streamed
   private final class BlockingStreamed[T](
       val process: T => Unit,
-      val done: Int => Unit,
+      val done: (Int, String) => Unit,
       val stream: () => Stream[T]
   )
 
@@ -51,16 +51,21 @@ object BlockingLineStream {
     val maxQueueSize = 65536
 
     def apply[T](nonzeroException: Boolean): BlockingStreamed[T] = {
-      val q = new LinkedBlockingQueue[Either[Int, T]](maxQueueSize)
+      val q = new LinkedBlockingQueue[Either[(Int, String), T]](maxQueueSize)
 
       def next(): Stream[T] = q.take match {
-        case Left(0) => Stream.empty
-        case Left(code) =>
-          if (nonzeroException) scala.sys.error("Nonzero exit code: " + code) else Stream.empty
+        case Left((0, _)) => Stream.empty
+        case Left((code, msg)) =>
+          if (nonzeroException) scala.sys.error(s"Nonzero exit code: $code. Stderr: $msg")
+          else Stream.empty
         case Right(s) => Stream.cons(s, next())
       }
 
-      new BlockingStreamed((s: T) => q put Right(s), code => q put Left(code), () => next())
+      new BlockingStreamed(
+        (s: T) => q put Right(s),
+        (code: Int, msg: String) => q put Left((code, msg)),
+        () => next()
+      )
     }
   }
 
@@ -76,9 +81,21 @@ object BlockingLineStream {
   }
 
   def apply(command: Seq[String]): Stream[String] = {
-    val streamed = BlockingStreamed[String](true)
-    val process  = command.run(BasicIO(false, streamed.process, None))
-    Spawn(streamed.done(process.exitValue()))
+    val streamed  = BlockingStreamed[String](true)
+    val errBuffer = new scala.collection.mutable.ArrayBuffer[String]()
+    val processLogger = scala.sys.process.ProcessLogger(
+      streamed.process,
+      (errLine: String) => errBuffer += errLine
+    )
+    val process = scala.sys.process.Process(command).run(processLogger)
+    Spawn {
+      val exitCode = process.exitValue()
+      if (exitCode != 0 && errBuffer.nonEmpty) {
+        println(s"Command failed with exit code $exitCode. Stderr:")
+        errBuffer.foreach(println)
+      }
+      streamed.done(exitCode, errBuffer.mkString("\n"))
+    }
     streamed.stream()
   }
 }
@@ -245,6 +262,7 @@ abstract class Tables(
       writer.format(format).mode(mode)
       if (format.equalsIgnoreCase("hudi")) {
         writer.option("hoodie.table.name", name)
+        writer.option("hoodie.datasource.write.operation", "insert_overwrite_table")
       }
       if (partitionColumns.nonEmpty) {
         writer.partitionBy(partitionColumns: _*)
@@ -254,7 +272,22 @@ abstract class Tables(
       if (format.equalsIgnoreCase("iceberg")) {
         writer.saveAsTable(s"default.$name")
       } else {
-        writer.save(location)
+        if (format.equalsIgnoreCase("hudi") && mode == SaveMode.Ignore) {
+          try
+            writer.save(location)
+          catch {
+            case e: Exception
+                if e.getMessage != null && e.getMessage.toLowerCase.contains("write to hudi") =>
+              println(
+                s"Ignoring table creation for $name as it already exists (Hudi Ignore mode behavior)."
+              )
+              log.info(
+                s"Ignoring table creation for $name as it already exists (Hudi Ignore mode behavior)."
+              )
+          }
+        } else {
+          writer.save(location)
+        }
       }
       spark.catalog.dropTempView(tempTableName)
     }
