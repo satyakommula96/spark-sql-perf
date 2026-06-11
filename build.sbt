@@ -45,6 +45,12 @@ libraryDependencies += "com.twitter" %% "util-jvm" % "24.2.0" % "provided"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % "test"
 
+libraryDependencies ++= Seq(
+  "io.delta" %% "delta-spark" % "3.1.0" % "test",
+  "org.apache.iceberg" %% "iceberg-spark-runtime-3.5" % "1.5.0" % "test",
+  "org.apache.hudi" % "hudi-spark3.5-bundle_2.12" % "0.14.1" % "test"
+)
+
 libraryDependencies += "org.yaml" % "snakeyaml" % "2.5"
 
 fork := true

@@ -1,8 +1,8 @@
 package com.databricks.spark.sql.perf
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class DatasetPerformanceSuite extends FunSuite {
+class DatasetPerformanceSuite extends AnyFunSuite {
   ignore("run benchmark") {
     val benchmark = new DatasetPerformance() {
       override val numLongs = 100

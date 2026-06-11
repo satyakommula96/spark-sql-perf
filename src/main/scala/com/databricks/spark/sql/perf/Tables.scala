@@ -243,12 +243,19 @@ abstract class Tables(
         }
       }
       writer.format(format).mode(mode)
+      if (format.equalsIgnoreCase("hudi")) {
+        writer.option("hoodie.table.name", name)
+      }
       if (partitionColumns.nonEmpty) {
         writer.partitionBy(partitionColumns: _*)
       }
       println(s"Generating table $name in database to $location with save mode $mode.")
       log.info(s"Generating table $name in database to $location with save mode $mode.")
-      writer.save(location)
+      if (format.equalsIgnoreCase("iceberg")) {
+        writer.saveAsTable(s"default.$name")
+      } else {
+        writer.save(location)
+      }
       spark.catalog.dropTempView(tempTableName)
     }
 
@@ -296,7 +303,7 @@ abstract class Tables(
       }
 
       val formatLower = format.toLowerCase
-      val skipRecover = Set("delta", "iceberg")
+      val skipRecover = Set("delta", "iceberg", "hudi")
       if (
         isPartitioned && partitionColumns.nonEmpty && discoverPartitions && !skipRecover.contains(
           formatLower
